@@ -125,5 +125,7 @@ app.get('/product/:series') {
 - Express 要如何動態生成 router？
     > 用 query 解決
 
+- Node.js 伺服器要怎麼建資料庫？
+
 ## 套件
 - passport
