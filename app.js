@@ -25,6 +25,12 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(expressSession);
 
 // 路由中間件
+app.use('/api', function (req, res, next) {
+    res.json({
+        name: 'liz',
+        favoriate: 'cake',
+    });
+});
 
 // 錯誤中間件
 app.use(function (req, res, next) {
