@@ -9,22 +9,27 @@ const express = require('express');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 require('dotenv').config();
-const cors = require("cors");
+const cors = require('cors');
 
 // 中間件 middlewares
 const expressSession = require('./middlewares/session');
 const res = require('express/lib/response');
+const productRouter = require('./routes/product');
+const authRouter = require('./routes/auth');
+const homeRouter = require('./routes/home');
+const memberRouter = require('./routes/member');
+const cartRouter = require('./routes/cart');
 
 // 建立 app 實例
 const app = express();
 // 使用第三方開發的 cors 中間件 //避免阻擋
 app.use(
     cors({
-      // 為了要讓 browser 在 CORS 的情況下還是幫我們送 cookie
-      origin: ["http://localhost:3000"],
-      credentials: true,
+        // 為了要讓 browser 在 CORS 的情況下還是幫我們送 cookie
+        origin: ['http://localhost:3000'],
+        credentials: true,
     })
-  );
+);
 
 // 樣版引擎設定 view engin setup
 app.set('views', path.join(__dirname, 'views'));
@@ -45,7 +50,13 @@ app.use(expressSession);
 //         favoriate: 'cake',
 //     });
 // });
-app.use('/api/product',productRouter);
+
+app.use('/api/auth', authRouter);
+app.use('/api/cart', cartRouter);
+app.use('/api/home', homeRouter);
+app.use('/api/member', memberRouter);
+app.use('/api/product', productRouter);
+
 // app.use('/api/product',(req,res,next)=>{
 //     console.info('hi')
 //     res.json({
