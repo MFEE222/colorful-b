@@ -1,3 +1,6 @@
+//自己寫的router
+let productRouter = require("./routes/product")
+
 // 內建庫 bulit-in
 const path = require('path');
 // 第三方庫 third-party
@@ -42,7 +45,6 @@ app.use(expressSession);
 //         favoriate: 'cake',
 //     });
 // });
-let productRouter = require("./routes/product")
 app.use('/api/product',productRouter);
 // app.use('/api/product',(req,res,next)=>{
 //     console.info('hi')
