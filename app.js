@@ -1,5 +1,4 @@
 //自己寫的router
-let productRouter = require("./routes/product")
 
 // 內建庫 bulit-in
 const path = require('path');

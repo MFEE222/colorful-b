@@ -17,8 +17,10 @@ route.post(route.login, function (req, res, next) {
     // TODO: 將登入狀態存儲在 Session 中
 });
 
-route.post(route.register, function (req, res, next) {
+router.post(route.register, function (req, res, next) {
     // TODO: 驗證前端傳送過來的資料有效性（express-validator）
+    console.log(req.body);
+    res.json({ message: "ok"});
     // TODO: 寫入資料庫（檢查帳號是否已存在、雜湊密碼）
 });
 
@@ -38,3 +40,5 @@ route.post(route.reset, function (req, res, next) {
 route.auth(route.auth, function (req, res, next) {
     // TODO: 驗證登入狀態
 });
+
+module.exports = router;
