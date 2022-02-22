@@ -53,7 +53,7 @@ app.use('/api/auth', authRouter);
 app.use('/api/cart', cartRouter);
 app.use('/api/home', homeRouter);
 app.use('/api/member', memberRouter);
-app.use('/api/product', productRouter);
+app.use('/api/products', productRouter);
 
 // app.use('/api/product',(req,res,next)=>{
 //     console.info('hi')
