@@ -27,9 +27,23 @@ const getData = async (req, res, next) => {
     // console.log('stars :>> ', stars);
     // console.log('offset :>> ', offset);
     // console.log('order :>> ', order);
-    // console.log('limit :>> ', limit);
+    // console.log('limit :> ', limit);
 
-    let sql = 'SELECT * FROM products';
+    let sql = `SELECT 
+                    id,
+                    name,
+                    descp,
+                    img,
+                    price,
+                    currency,
+                    favorites,
+                    owners,
+                    stars,
+                    review_counts,
+                    created_at,
+                    product_series_id
+               FROM products
+               WHERE product_status_id = 1`;
     // keyword
     if (keyword) {
         sql = where(sql, 'name LIKE ?');
