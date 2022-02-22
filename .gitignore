@@ -3,3 +3,5 @@ tmp.*
 .env
 dist
 .DS_Store
+
+/public/images/
