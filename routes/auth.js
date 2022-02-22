@@ -1,6 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const Connection = require('../utils/db');
+const connection = require('../utils/db');
+const bcrypt = require("bcrypt");
+const mysql = require('mysql2');
+
 
 // get, post, delete, put
 const routes = {
@@ -12,42 +15,48 @@ const routes = {
     auth: '/',
 };
 
-const { body, validationResult } = require("express-validator");
+const {
+    body,
+    validationResult
+} = require("express-validator");
 const registerRules = [
-  // 檢查 email 是否符合格式
-  body("email").isEmail().withMessage("Email 欄位請填寫正確格式"),
-  body("password").isLength({ min: 8 }).withMessage("密碼長度至少為 8"),
-  body("confirmPassword")
-    .custom((value, { req }) => {
-      return value === req.body.password;
+    // 檢查 email 是否符合格式
+    body("email").isEmail().withMessage("Email 欄位請填寫正確格式"),
+    body("password").isLength({
+        min: 8
+    }).withMessage("密碼長度至少為 8"),
+    body("confirmPassword")
+    .custom((value, {
+        req
+    }) => {
+        return value === req.body.password;
     })
     .withMessage("密碼驗證不一致"),
 ];
 
-
 router.post(routes.register, registerRules, async (req, res, next) => {
-    // TODO: 驗證前端傳送過來的資料有效性（express-validator）
+    // 驗證前端傳送過來的資料有效性（express-validator）
     //驗證結果
     const validateResult = validationResult(req);
+    // console.log(validateResult);
     if (!validateResult.isEmpty()) {
-      // validateResult 不是空的
-      let error = validateResult.array();
-      console.log("validateResult", error);
-      return res.status(400).json({
-        code: "33001",
-        msg: error[0].msg,
-      });
+        // validateResult 不是空的
+        let error = validateResult.array();
+        // console.log("validateResult", error);
+        return res.status(400).json({
+            code: "33001",
+            msg: error[0].msg,
+        });
     }
 
-    
-    // TODO: 寫入資料庫（檢查帳號是否已存在、雜湊密碼）
+    // 寫入資料庫（檢查帳號是否已存在、雜湊密碼）
     // 檢查email 是否已註冊
-    let [ member ] = await Connection.execute(
-        "SELECT * FROM member WHERE email=?",
+    let [users] = await connection.execute(
+        "SELECT * FROM users WHERE email=?",
         [req.body.email]
     );
-    console.log(members);
-    if(member.length > 0 ) {
+    console.log(users);
+    if (users.length > 0) {
         return res.status(400).send({
             code: "33002",
             msg: "這個 email 已經註冊過了",
@@ -55,31 +64,84 @@ router.post(routes.register, registerRules, async (req, res, next) => {
     }
     // 雜湊 password
     let hashPassword = await bcrypt.hash(req.body.password, 10);
-    
-    let [result] = await connection.excute(
-        "INSERT INTO members (email, password, name) VALUES (?, ?, ?, ?)",
-        []
-    )
+
+    //存資料庫
+    let [result] = await connection.execute(
+        "INSERT INTO users (email, password, name) VALUES (?, ?, ?)",
+        [req.body.email, hashPassword, req.body.name]
+    );
+    console.log(result);
+
+    res.json({
+        message: "ok "
+    });
 
 });
 
 
-router.post(routes.login, function (req, res, next) {
+router.post(routes.login, async (req, res, next) => {
     // TODO: 限制 N 時間內嘗試 N 次
-    // TODO: 將登入狀態存儲在 Session 中
+
+    
+
+    let [users] = await connection.execute(
+        "SELECT * FROM users WHERE email=?",
+        [req.body.email]
+    );
+    console.log(users);
+    if (users.length === 0) {
+        return res.statusMessage(400).send({
+            code: "33003",
+            msg: "尚未註冊",
+        });
+    }
+    //把會員資料拿出來
+    let user = users[0];
+    console.log(user);
+
+
+    let result = await bcrypt.compare(req.body.password, user.password);
+    if (!result) {
+        return res.status(400).send({
+            code: "33004",
+            msg: "帳號密碼錯誤",
+        });
+    }
+
+
+    
+
+    //整理資料
+    let returnMember = {
+        id: user.id,
+        name: user.name,
+    }
+    // 將登入狀態存儲在 Session 中
+    req.session.user = returnMember;
+
+
     // 已登入
     if (req.session.isLogin) {
         res.json({
             login: true
         });
     }
+    res.json({
+        code: "0",
+        data: returnMember,
+    });
     // 尚未登入
+    // res.json({
+    //     message: "ok "
+    // });
 });
 
 
 
-router.post(routes.logout, function (req, res, next) {
-    // TODO: 刪除登入狀態 Session
+router.get(routes.logout, (req, res, next) => {
+    // 刪除登入狀態 Session
+    req.session.user = null;
+    res.sendStatus(202);
 });
 
 router.post(routes.forgot, function (req, res, next) {
