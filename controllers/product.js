@@ -13,6 +13,7 @@ const getData = async (req, res, next) => {
         owners,
         stars,
         offset,
+        orderby,
         order,
         limit,
     } = req.query;
@@ -26,6 +27,7 @@ const getData = async (req, res, next) => {
     // console.log('owners :>> ', owners);
     // console.log('stars :>> ', stars);
     // console.log('offset :>> ', offset);
+    // console.log('orderby :>> ', orderby);
     // console.log('order :>> ', order);
     // console.log('limit :> ', limit);
 
@@ -66,21 +68,93 @@ const getData = async (req, res, next) => {
         }
     }
 
-    if (order) {
-        sql =
-            order == 0
-                ? sql.concat(` ORDER BY price ASC`)
-                : sql.concat(` ORDER BY price DESC`);
+    if (order && orderby) {
+        const s = order == 0 ? 'ASC' : 'DESC';
+        switch (orderby) {
+            case 'id':
+                sql =
+                    order == 1
+                        ? sql.concat(` ORDER BY id DESC`)
+                        : sql.concat(` ORDER BY id`);
+                break;
+            case 'name':
+                sql =
+                    order == 1
+                        ? sql.concat(` ORDER BY name DESC`)
+                        : sql.concat(` ORDER BY name`);
+                break;
+            case 'descp':
+                sql =
+                    order == 1
+                        ? sql.concat(` ORDER BY descp DESC`)
+                        : sql.concat(` ORDER BY descp`);
+                break;
+            case 'img':
+                sql =
+                    order == 1
+                        ? sql.concat(` ORDER BY img DESC`)
+                        : sql.concat(` ORDER BY img`);
+                break;
+            case 'price':
+                sql =
+                    order == 1
+                        ? sql.concat(` ORDER BY price DESC`)
+                        : sql.concat(` ORDER BY price`);
+                break;
+            case 'currency':
+                sql =
+                    order == 1
+                        ? sql.concat(` ORDER BY currency DESC`)
+                        : sql.concat(` ORDER BY currency`);
+                break;
+            case 'favorites':
+                sql =
+                    order == 1
+                        ? sql.concat(` ORDER BY favorites DESC`)
+                        : sql.concat(` ORDER BY favorites`);
+                break;
+            case 'owners':
+                sql =
+                    order == 1
+                        ? sql.concat(` ORDER BY owners DESC`)
+                        : sql.concat(` ORDER BY owners`);
+                break;
+            case 'stars':
+                sql =
+                    order == 1
+                        ? sql.concat(` ORDER BY stars DESC`)
+                        : sql.concat(` ORDER BY stars`);
+                break;
+            case 'review_counts':
+                sql =
+                    order == 1
+                        ? sql.concat(` ORDER BY review_counts DESC`)
+                        : sql.concat(` ORDER BY review_counts`);
+                break;
+            case 'created_at':
+                sql =
+                    order == 1
+                        ? sql.concat(` ORDER BY created_at DESC`)
+                        : sql.concat(` ORDER BY created_at`);
+                break;
+            case 'product_series_id':
+                sql =
+                    order == 1
+                        ? sql.concat(` ORDER BY product_series_id DESC`)
+                        : sql.concat(` ORDER BY product_series_id`);
+                break;
+        }
+        values.push(s);
     }
     // favorite (>=, <=)
     // TODO:前端用升冪降冪
     // owners
     // TODO:前端用升冪降冪
     // limit
-    if (limit) {
-        sql = sql.concat(' LIMIT ?');
-        values.push(limit);
-    }
+    // if (limit) {
+    //     sql = sql.concat(' LIMIT ?');
+    //     values.push(limit);
+    // }
     console.log('sql :>> ', sql);
     console.log('values :>> ', values);
 
@@ -94,29 +168,28 @@ const getData = async (req, res, next) => {
         let [data, datafileds] = await connection.execute(sql, values);
         console.log('data :>> ', data);
         // console.log('datafileds :>> ', datafileds);
-
-        // res.json(data);
+        res.json(data);
     } catch (err) {
         console.log('err :>> ', err);
     }
 
-    res.json({ word: 'hi' });
+    // res.json({ word: 'hi' });
 };
 
-//全部商品
-// let [data,datafileds] = await connection.execute("SELECT * FROM products LIMIT 15");
-// //tags種類
-// let [tags,tagsfileds] = await connection.execute("SELECT * FROM tag");
-// // tags商品
-// let [tagProduct,tagProductFileds] = await connection.execute("SELECT * FROM product_tag");
-// // console.log('here---------')
-// console.log(data);
-// res.json({
-//     data,
-//     tags,
-//     tagProduct,
-
-// });
+//tags ,rank 種類
+const getList = async (req, res, next) => {
+    let [tags, tagsfileds] = await connection.execute('SELECT * FROM tag');
+    // // tags商品
+    let [tagProduct, tagProductFileds] = await connection.execute(
+        'SELECT * FROM product_tag'
+    );
+    // // console.log('here---------')
+    // console.log(data);
+    res.json({
+        tags,
+        tagProduct,
+    });
+};
 
 //推薦
 const getRanking = async (req, res, next) => {
