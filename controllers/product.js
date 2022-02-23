@@ -151,10 +151,10 @@ const getData = async (req, res, next) => {
     // owners
     // TODO:前端用升冪降冪
     // limit
-    // if (limit) {
-    //     sql = sql.concat(' LIMIT ?');
-    //     values.push(limit);
-    // }
+    if (limit) {
+        sql = sql.concat(' LIMIT ?');
+        values.push(limit);
+    }
     console.log('sql :>> ', sql);
     console.log('values :>> ', values);
 
