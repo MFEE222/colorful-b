@@ -5,9 +5,12 @@ const productController = require('../controllers/product');
 // RESTful API 的列表
 // product/
 // router.get('/', productController.getData);
-router.get('/rank', productController.getRanking);
-router.get('/detail/:pid', productController.getReviewDetail);
+router.get('/recommend', productController.getRecommend);
+router.get('/list', productController.getList);
+router.get('/review/:pid', productController.getReviewDetail);
 
-router.get('/',productController.getData);
+router.get('/', productController.getData);
+
+// router.get('/:id', ....)
 
 module.exports = router;

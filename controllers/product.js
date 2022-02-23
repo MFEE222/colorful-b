@@ -176,29 +176,27 @@ const getData = async (req, res, next) => {
     // res.json({ word: 'hi' });
 };
 
-//tags ,rank 種類
+//tags 種類
 const getList = async (req, res, next) => {
+    let [series, seriesfieds] = await connection.execute(
+        'SELECT * FROM product_series'
+    );
     let [tags, tagsfileds] = await connection.execute('SELECT * FROM tag');
-    // // tags商品
     let [tagProduct, tagProductFileds] = await connection.execute(
         'SELECT * FROM product_tag'
     );
-    // // console.log('here---------')
-    // console.log(data);
-    res.json({
-        tags,
-        tagProduct,
-    });
+    console.log(series);
+    res.json({ series, tags, tagProduct });
 };
 
 //推薦
-const getRanking = async (req, res, next) => {
-    let [rank, rankFileds] = await connection.execute(
-        'SELECT * FROM products ORDER BY products.owners DESC LIMIT 8'
+const getRecommend = async (req, res, next) => {
+    let [recommend, recommendfields] = await connection.execute(
+        'SELECT * FROM products WHERE product_status_id = 1 ORDER BY products.owners DESC LIMIT 8'
     );
-    console.log(rank);
+    console.log(recommend);
     res.json({
-        rank,
+        recommend,
     });
 };
 //review 詳細
@@ -225,19 +223,11 @@ const getReviewDetail = async (req, res, next) => {
         `,
         [pid]
     );
-
     res.json({ reviewDetail });
-
-    // let [reviewDetail, reviewDetailFields] = await connection.execute(
-    //     `
-    //         SELECT *
-    //         FROM review
-    //     `,
-    //     [pid]
-    // );
 };
 module.exports = {
     getData,
-    getRanking,
+    getList,
+    getRecommend,
     getReviewDetail,
 };
