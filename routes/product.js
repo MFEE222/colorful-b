@@ -8,7 +8,7 @@ const productController = require('../controllers/product');
 router.get('/recommend', productController.getRecommend);
 router.get('/list', productController.getList);
 router.get('/review/:pid', productController.getReviewDetail);
-
+// router.get('/review/:pid/imgs', productController.getReviewImgs);
 router.get('/', productController.getData);
 
 // router.get('/:id', ....)

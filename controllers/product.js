@@ -5,6 +5,7 @@ const connection = require('../utils/db');
 const getData = async (req, res, next) => {
     // const sqlst = ()=>{
     const {
+        ids,
         keyword,
         date,
         series,
@@ -46,6 +47,21 @@ const getData = async (req, res, next) => {
                     product_series_id
                FROM products
                WHERE product_status_id = 1`;
+    // ids [1,2,3]
+    if (ids) {
+        // 1.           ( id = ?
+        // 2 ~ N-1.     OR id = ?
+        // N.           OR id = ?)
+        for (let i = 0; i < ids.length; i++) {
+            if (i === 0) {
+                sql += ' AND ( id = ?';
+            } else {
+                sql += ' OR id = ?';
+            }
+            values.push(ids[i]);
+        }
+        sql += ' )';
+    }
     // keyword
     if (keyword) {
         sql = where(sql, 'name LIKE ?');
@@ -160,7 +176,7 @@ const getData = async (req, res, next) => {
 
     function where(sql, condition, operator = 'AND') {
         return sql.includes('WHERE')
-            ? sql.concat(' AND ', '(', condition, ')')
+            ? sql.concat(` ${operator} `, '(', condition, ')')
             : sql.concat(' WHERE ', '(', condition, ')');
     }
 
@@ -168,7 +184,11 @@ const getData = async (req, res, next) => {
         let [data, datafileds] = await connection.execute(sql, values);
         console.log('data :>> ', data);
         // console.log('datafileds :>> ', datafileds);
-        res.json(data);
+        // res.json(data);
+        res.json({
+            statusCode: 2002,
+            products: data,
+        });
     } catch (err) {
         console.log('err :>> ', err);
     }
@@ -224,10 +244,14 @@ const getReviewDetail = async (req, res, next) => {
         [pid]
     );
     res.json({ reviewDetail });
+    //TODO:根據資料庫img存的「 資料夾路徑 」回傳裡面全部的照片（一條會員評論的照片）
+    //TODO:回傳此商品顧客上傳的全部照片
 };
+
 module.exports = {
     getData,
     getList,
     getRecommend,
     getReviewDetail,
+    // getReviewImgs,
 };
