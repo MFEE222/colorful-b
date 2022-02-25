@@ -1,0 +1,12 @@
+extend layout
+
+block content 
+    h1= title 
+    form(action="/uploads/profile", method="post")  
+        label(for="upload") 
+        input(type="file" accept="image/gif, image/jpeg, image/jpg,image/png" multiple id="upload" name="upload-avator") 
+        div 
+            button(type="submit") upload your avator
+    div 
+        h2= imgUrl
+        img(src=imgUrl, alt="")
