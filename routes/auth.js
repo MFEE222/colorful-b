@@ -8,7 +8,7 @@ const mysql = require('mysql2');
 // get, post, delete, put
 const routes = {
     login: '/login',
-    register: '/register',
+    register: '/signup',
     logout: '/logout',
     forgot: '/forgot',
     reset: '/reset',
@@ -35,6 +35,7 @@ const registerRules = [
 ];
 
 router.post(routes.register, registerRules, async (req, res, next) => {
+    
     // 驗證前端傳送過來的資料有效性（express-validator）
     //驗證結果
     const validateResult = validationResult(req);
@@ -53,7 +54,7 @@ router.post(routes.register, registerRules, async (req, res, next) => {
     // 檢查email 是否已註冊
     let [users] = await connection.execute(
         "SELECT * FROM users WHERE email=?",
-        [req.body.email]
+        [account]
     );
     console.log(users);
     if (users.length > 0) {
@@ -68,7 +69,7 @@ router.post(routes.register, registerRules, async (req, res, next) => {
     //存資料庫
     let [result] = await connection.execute(
         "INSERT INTO users (email, password, name) VALUES (?, ?, ?)",
-        [req.body.email, hashPassword, req.body.name]
+        [account, hashPassword, req.body.name]
     );
     console.log(result);
 
@@ -82,11 +83,13 @@ router.post(routes.register, registerRules, async (req, res, next) => {
 router.post(routes.login, async (req, res, next) => {
     // TODO: 限制 N 時間內嘗試 N 次
 
-    
+    console.log('req.body :>> ', req.body);
+    const account = req.body.account;
+    const password = req.body.password;
 
     let [users] = await connection.execute(
         "SELECT * FROM users WHERE email=?",
-        [req.body.email]
+        [account]
     );
     console.log(users);
     if (users.length === 0) {
