@@ -1,4 +1,3 @@
-
 // 內建庫 bulit-in
 const path = require('path');
 // 第三方庫 third-party
@@ -17,6 +16,7 @@ const authRouter = require('./routes/auth');
 const homeRouter = require('./routes/home');
 const memberRouter = require('./routes/member');
 const cartRouter = require('./routes/cart');
+const ordersRouter = require('./routes/orders');
 
 // 建立 app 實例
 const app = express();
@@ -54,6 +54,7 @@ app.use('/api/cart', cartRouter);
 app.use('/api/home', homeRouter);
 app.use('/api/member', memberRouter);
 app.use('/api/products', productRouter);
+app.use('/api/orders', ordersRouter);
 
 // app.use('/api/product',(req,res,next)=>{
 //     console.info('hi')
