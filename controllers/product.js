@@ -1,9 +1,78 @@
-// /controllers/product
 const connection = require('../utils/db');
+
+// 請求推薦商品
+const getRecommend = async (req, res, next) => {
+    try {
+        const [data, fields] = await connection.execute(
+            'SELECT * FROM products WHERE product_status_id = 1 ORDER BY products.owners DESC LIMIT 8'
+        );
+        // console.log('data :>> ', data);
+        res.json({
+            recommend: data,
+        });
+    } catch (err) {
+        console.log('err :>> ', err);
+    }
+};
+
+// 請求系列標籤
+const getList = async (req, res, next) => {
+    try {
+        const [series, seriesfieds] = await connection.execute(
+            'SELECT * FROM product_series'
+        );
+        // console.log('series :>> ', series);
+
+        const [tags, tagsfileds] = await connection.execute(
+            'SELECT * FROM tag'
+        );
+        // console.log('tags :>> ', tags);
+
+        const [tagProduct, tagProductFileds] = await connection.execute(
+            'SELECT * FROM product_tag'
+        );
+        // console.log('tagProduct :>> ', tagProduct);
+
+        res.json({ series, tags, tagProduct });
+    } catch (err) {
+        console.log('err :>> ', err);
+    }
+};
+
+// 請求評論資料
+//TODO:根據資料庫img存的「 資料夾路徑 」回傳裡面全部的照片（一條會員評論的照片）
+//TODO:回傳此商品顧客上傳的全部照片
+const getReviewDetail = async (req, res, next) => {
+    const pid = req.params.pid;
+    try {
+        const [reviewDetail, reviewDetailFields] = await connection.execute(
+            `
+            SELECT
+                review.id as r_id,
+                review.title as r_title,
+                review.content as r_content,
+                review.stars as r_stars,
+                review.img as r_img,
+                review.likes as r_likes,
+                review.created_at as r_created_at,
+                review.user_id as r_user_id,
+                review.product_id as r_product_id,
+                users.name as u_name,
+                users.figure as u_figur
+            FROM review
+            LEFT JOIN users ON review.user_id = users.id
+            WHERE review.product_id = ?
+        `,
+            [pid]
+        );
+        res.json({ reviewDetail });
+    } catch (err) {
+        console.log('err :>> ', err);
+    }
+};
 
 //取得全部資料
 const getData = async (req, res, next) => {
-    // const sqlst = ()=>{
     const {
         ids,
         keyword,
@@ -19,18 +88,6 @@ const getData = async (req, res, next) => {
         limit,
     } = req.query;
     const values = [];
-    // console.log('req.query :>> ', req.query);
-    // console.log('keyword :>> ', keyword);
-    // console.log('date :>> ', date);
-    // console.log('series :>> ', series);
-    // console.log('price :>> ', price);
-    // console.log('favorites :>> ', favorites);
-    // console.log('owners :>> ', owners);
-    // console.log('stars :>> ', stars);
-    // console.log('offset :>> ', offset);
-    // console.log('orderby :>> ', orderby);
-    // console.log('order :>> ', order);
-    // console.log('limit :> ', limit);
 
     let sql = `SELECT 
                     id,
@@ -47,7 +104,6 @@ const getData = async (req, res, next) => {
                     product_series_id
                FROM products
                WHERE product_status_id = 1`;
-    // ids [1,2,3]
     if (ids) {
         // 1.           ( id = ?
         // 2 ~ N-1.     OR id = ?
@@ -192,60 +248,6 @@ const getData = async (req, res, next) => {
     } catch (err) {
         console.log('err :>> ', err);
     }
-
-    // res.json({ word: 'hi' });
-};
-
-//tags 種類
-const getList = async (req, res, next) => {
-    let [series, seriesfieds] = await connection.execute(
-        'SELECT * FROM product_series'
-    );
-    let [tags, tagsfileds] = await connection.execute('SELECT * FROM tag');
-    let [tagProduct, tagProductFileds] = await connection.execute(
-        'SELECT * FROM product_tag'
-    );
-    console.log(series);
-    res.json({ series, tags, tagProduct });
-};
-
-//推薦
-const getRecommend = async (req, res, next) => {
-    let [recommend, recommendfields] = await connection.execute(
-        'SELECT * FROM products WHERE product_status_id = 1 ORDER BY products.owners DESC LIMIT 8'
-    );
-    console.log(recommend);
-    res.json({
-        recommend,
-    });
-};
-//review 詳細
-const getReviewDetail = async (req, res, next) => {
-    const pid = req.params.pid;
-    console.log(req);
-    let [reviewDetail, reviewDetailFields] = await connection.execute(
-        `
-            SELECT
-                review.id as r_id,
-                review.title as r_title,
-                review.content as r_content,
-                review.stars as r_stars,
-                review.img as r_img,
-                review.likes as r_likes,
-                review.created_at as r_created_at,
-                review.user_id as r_user_id,
-                review.product_id as r_product_id,
-                users.name as u_name,
-                users.figure as u_figur
-            FROM review
-            LEFT JOIN users ON review.user_id = users.id
-            WHERE review.product_id = ?
-        `,
-        [pid]
-    );
-    res.json({ reviewDetail });
-    //TODO:根據資料庫img存的「 資料夾路徑 」回傳裡面全部的照片（一條會員評論的照片）
-    //TODO:回傳此商品顧客上傳的全部照片
 };
 
 module.exports = {

@@ -2,15 +2,16 @@ const express = require('express');
 const router = express.Router();
 const productController = require('../controllers/product');
 
-// RESTful API 的列表
-// product/
-// router.get('/', productController.getData);
+// 請求推薦商品
 router.get('/recommend', productController.getRecommend);
-router.get('/list', productController.getList);
-router.get('/review/:pid', productController.getReviewDetail);
-// router.get('/review/:pid/imgs', productController.getReviewImgs);
-router.get('/', productController.getData);
 
-// router.get('/:id', ....)
+// 請求系列標籤
+router.get('/list', productController.getList);
+
+// 請求評論資料
+router.get('/review/:pid', productController.getReviewDetail);
+
+// 請求商品資料
+router.get('/', productController.getData);
 
 module.exports = router;
