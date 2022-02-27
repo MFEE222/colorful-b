@@ -129,3 +129,23 @@ app.get('/product/:series') {
 
 ## 套件
 - passport
+https://github.com/mailgun/mailgun.js#install
+
+
+## TODO
+1. 前端要有什麼狀態，需要什麼資料，格式要怎樣
+2. 需要驗證什麼，需要整理什麼資料，處理什麼動作
+
+1. api/review
+
+2. api/cart
+
+3. api/product
+
+4. api/product detail
+
+5. api/profile
+
+6. api/order
+
+7. api/order detail
