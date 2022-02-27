@@ -6,7 +6,5 @@ dist
 try
 
 /public/images/
-<<<<<<< HEAD
-=======
 /public/uploads/
->>>>>>> main
+/download
