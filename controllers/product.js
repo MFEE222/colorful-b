@@ -1,3 +1,4 @@
+const res = require('express/lib/response');
 const connection = require('../utils/db');
 
 // 請求推薦商品
@@ -48,20 +49,20 @@ const getReviewDetail = async (req, res, next) => {
         const [reviewDetail, reviewDetailFields] = await connection.execute(
             `
             SELECT
-                review.id as r_id,
-                review.title as r_title,
-                review.content as r_content,
-                review.stars as r_stars,
-                review.img as r_img,
-                review.likes as r_likes,
-                review.created_at as r_created_at,
-                review.user_id as r_user_id,
-                review.product_id as r_product_id,
-                users.name as u_name,
-                users.figure as u_figur
-            FROM review
-            LEFT JOIN users ON review.user_id = users.id
-            WHERE review.product_id = ?
+                reviews.id,
+                reviews.title,
+                reviews.content,
+                reviews.stars,
+                reviews.img,
+                reviews.likes,
+                reviews.created_at,
+                reviews.user_id,
+                reviews.product_id,
+                users.name,
+                users.figure
+            FROM reviews
+            LEFT JOIN users ON reviews.user_id = users.id
+            WHERE reviews.product_id = ?
         `,
             [pid]
         );
@@ -72,7 +73,200 @@ const getReviewDetail = async (req, res, next) => {
 };
 
 //取得全部資料
-const getData = async (req, res, next) => {
+// const getData = async (req, res, next) => {
+//     console.log('here');
+//     const {
+//         ids,
+//         keyword,
+//         date,
+//         series,
+//         price,
+//         favorites,
+//         owners,
+//         stars,
+//         offset,
+//         orderby,
+//         order,
+//         limit,
+//     } = req.query;
+//     const values = [];
+
+//     let pre = [
+//         `SELECT
+//                     id,
+//                     name,
+//                     descp,
+//                     img,
+//                     price,
+//                     currency,
+//                     favorites,
+//                     owners,
+//                     stars,
+//                     review_counts,
+//                     created_at,
+//                     product_series_id`,
+//         `SELECT COUNT(id) AS total`,
+//     ];
+
+//     let sql = `
+//                FROM products
+//                WHERE product_status_id = 1`;
+//     if (ids) {
+//         // 1.           ( id = ?
+//         // 2 ~ N-1.     OR id = ?
+//         // N.           OR id = ?)
+//         for (let i = 0; i < ids.length; i++) {
+//             if (i === 0) {
+//                 sql += ' AND ( id = ?';
+//             } else {
+//                 sql += ' OR id = ?';
+//             }
+//             values.push(ids[i]);
+//         }
+//         sql += ' )';
+//     }
+//     // keyword
+//     if (keyword) {
+//         sql = where(sql, 'name LIKE ?');
+//         values.push('%' + keyword + '%');
+//     }
+//     // series
+//     if (series) {
+//         sql = where(sql, 'product_series_id = ?');
+//         values.push(series);
+//     }
+//     // price (>=, <= [200, ASC or DESC])
+//     if (price) {
+//         if (price[0] > 0) {
+//             sql = where(sql, 'price >= ?');
+//             values.push(price[0]);
+//         }
+//         if (price[1] > 0) {
+//             sql = where(sql, 'price <= ?');
+//             values.push(price[1]);
+//         }
+//     }
+
+//     // orderby 成立才會抓 order 資料
+//     if (orderby) {
+//         const s = order == 0 ? 'ASC' : 'DESC';
+//         switch (orderby) {
+//             case 'id':
+//                 sql =
+//                     order == 1
+//                         ? sql.concat(` ORDER BY id DESC`)
+//                         : sql.concat(` ORDER BY id`);
+//                 break;
+//             case 'name':
+//                 sql =
+//                     order == 1
+//                         ? sql.concat(` ORDER BY name DESC`)
+//                         : sql.concat(` ORDER BY name`);
+//                 break;
+//             case 'descp':
+//                 sql =
+//                     order == 1
+//                         ? sql.concat(` ORDER BY descp DESC`)
+//                         : sql.concat(` ORDER BY descp`);
+//                 break;
+//             case 'img':
+//                 sql =
+//                     order == 1
+//                         ? sql.concat(` ORDER BY img DESC`)
+//                         : sql.concat(` ORDER BY img`);
+//                 break;
+//             case 'price':
+//                 sql =
+//                     order == 1
+//                         ? sql.concat(` ORDER BY price DESC`)
+//                         : sql.concat(` ORDER BY price`);
+//                 break;
+//             case 'currency':
+//                 sql =
+//                     order == 1
+//                         ? sql.concat(` ORDER BY currency DESC`)
+//                         : sql.concat(` ORDER BY currency`);
+//                 break;
+//             case 'favorites':
+//                 sql =
+//                     order == 1
+//                         ? sql.concat(` ORDER BY favorites DESC`)
+//                         : sql.concat(` ORDER BY favorites`);
+//                 break;
+//             case 'owners':
+//                 sql =
+//                     order == 1
+//                         ? sql.concat(` ORDER BY owners DESC`)
+//                         : sql.concat(` ORDER BY owners`);
+//                 break;
+//             case 'stars':
+//                 sql =
+//                     order == 1
+//                         ? sql.concat(` ORDER BY stars DESC`)
+//                         : sql.concat(` ORDER BY stars`);
+//                 break;
+//             case 'review_counts':
+//                 sql =
+//                     order == 1
+//                         ? sql.concat(` ORDER BY review_counts DESC`)
+//                         : sql.concat(` ORDER BY review_counts`);
+//                 break;
+//             case 'created_at':
+//                 sql =
+//                     order == 1
+//                         ? sql.concat(` ORDER BY created_at DESC`)
+//                         : sql.concat(` ORDER BY created_at`);
+//                 break;
+//             case 'product_series_id':
+//                 sql =
+//                     order == 1
+//                         ? sql.concat(` ORDER BY product_series_id DESC`)
+//                         : sql.concat(` ORDER BY product_series_id`);
+//                 break;
+//         }
+//         values.push(s);
+//     }
+//     // favorite (>=, <=)
+//     // TODO:前端用升冪降冪
+//     // owners
+//     // TODO:前端用升冪降冪
+//     // limit
+//     if (limit) {
+//         sql = sql.concat(' LIMIT ?');
+//         values.push(limit);
+//     }
+//     if (offset) {
+//         sql = sql.concat(' OFFSET ?');
+//         values.push(offset);
+//     }
+//     console.log('sql :>> ', sql);
+//     console.log('values :>> ', values);
+
+//     function where(sql, condition, operator = 'AND') {
+//         return sql.includes('WHERE')
+//             ? sql.concat(` ${operator} `, '(', condition, ')')
+//             : sql.concat(' WHERE ', '(', condition, ')');
+//     }
+
+//     try {
+//         let [data, datafileds] = await connection.execute(pre[0] + sql, values);
+//         // let [total] = await connection.execute(pre[1] + sql, values);
+//         console.log('data :>> ', data);
+//         // console.log('total :>> ', total);
+//         // console.log('datafileds :>> ', datafileds);
+//         // res.json(data);
+//         res.json({
+//             statusCode: 2002,
+//             products: data,
+//             // total: total[0].total,
+//         });
+//     } catch (err) {
+//         console.log('err :>> ', err);
+//     }
+// };
+
+const getData = async function (req, res, next) {
+    // 取得 query
     const {
         ids,
         keyword,
@@ -87,168 +281,182 @@ const getData = async (req, res, next) => {
         order,
         limit,
     } = req.query;
-    const values = [];
+    console.log('req.query:>> ', req.query);
+    // 3 個 SQL
+    const sql_count = new sql('SELECT', ['COUNT(id) AS total'], 'products');
+    // const sql_tags = new sql('SELECT', ['product_id'], 'product_tag');
+    const sql_products = new sql(
+        'SELECT',
+        [
+            'id',
+            'name',
+            'descp',
+            'img',
+            'price',
+            'currency',
+            'favorites',
+            'owners',
+            'stars',
+            'review_counts',
+            'created_at',
+            'product_series_id',
+        ],
+        'products'
+    );
 
-    let sql = `SELECT 
-                    id,
-                    name,
-                    descp,
-                    img,
-                    price,
-                    currency,
-                    favorites,
-                    owners,
-                    stars,
-                    review_counts,
-                    created_at,
-                    product_series_id
-               FROM products
-               WHERE product_status_id = 1`;
+    // 條件設定
     if (ids) {
-        // 1.           ( id = ?
-        // 2 ~ N-1.     OR id = ?
-        // N.           OR id = ?)
-        for (let i = 0; i < ids.length; i++) {
-            if (i === 0) {
-                sql += ' AND ( id = ?';
-            } else {
-                sql += ' OR id = ?';
-            }
-            values.push(ids[i]);
-        }
-        sql += ' )';
+        sql_count.id(ids);
+        sql_products.id(ids);
     }
-    // keyword
     if (keyword) {
-        sql = where(sql, 'name LIKE ?');
-        values.push('%' + keyword + '%');
+        sql_count.keyword(keyword);
+        sql_products.keyword(keyword);
     }
-    // series
     if (series) {
-        sql = where(sql, 'product_series_id = ?');
-        values.push(series);
+        sql_count.series(series);
+        sql_products.series(series);
     }
-    // price (>=, <= [200, ASC or DESC])
     if (price) {
-        if (price[0] > 0) {
-            sql = where(sql, 'price >= ?');
-            values.push(price[0]);
-        }
-        if (price[1] > 0) {
-            sql = where(sql, 'price <= ?');
-            values.push(price[1]);
-        }
+        sql_count.price(price);
+        sql_products.price(price);
     }
-
-    if (order && orderby) {
-        const s = order == 0 ? 'ASC' : 'DESC';
-        switch (orderby) {
-            case 'id':
-                sql =
-                    order == 1
-                        ? sql.concat(` ORDER BY id DESC`)
-                        : sql.concat(` ORDER BY id`);
-                break;
-            case 'name':
-                sql =
-                    order == 1
-                        ? sql.concat(` ORDER BY name DESC`)
-                        : sql.concat(` ORDER BY name`);
-                break;
-            case 'descp':
-                sql =
-                    order == 1
-                        ? sql.concat(` ORDER BY descp DESC`)
-                        : sql.concat(` ORDER BY descp`);
-                break;
-            case 'img':
-                sql =
-                    order == 1
-                        ? sql.concat(` ORDER BY img DESC`)
-                        : sql.concat(` ORDER BY img`);
-                break;
-            case 'price':
-                sql =
-                    order == 1
-                        ? sql.concat(` ORDER BY price DESC`)
-                        : sql.concat(` ORDER BY price`);
-                break;
-            case 'currency':
-                sql =
-                    order == 1
-                        ? sql.concat(` ORDER BY currency DESC`)
-                        : sql.concat(` ORDER BY currency`);
-                break;
-            case 'favorites':
-                sql =
-                    order == 1
-                        ? sql.concat(` ORDER BY favorites DESC`)
-                        : sql.concat(` ORDER BY favorites`);
-                break;
-            case 'owners':
-                sql =
-                    order == 1
-                        ? sql.concat(` ORDER BY owners DESC`)
-                        : sql.concat(` ORDER BY owners`);
-                break;
-            case 'stars':
-                sql =
-                    order == 1
-                        ? sql.concat(` ORDER BY stars DESC`)
-                        : sql.concat(` ORDER BY stars`);
-                break;
-            case 'review_counts':
-                sql =
-                    order == 1
-                        ? sql.concat(` ORDER BY review_counts DESC`)
-                        : sql.concat(` ORDER BY review_counts`);
-                break;
-            case 'created_at':
-                sql =
-                    order == 1
-                        ? sql.concat(` ORDER BY created_at DESC`)
-                        : sql.concat(` ORDER BY created_at`);
-                break;
-            case 'product_series_id':
-                sql =
-                    order == 1
-                        ? sql.concat(` ORDER BY product_series_id DESC`)
-                        : sql.concat(` ORDER BY product_series_id`);
-                break;
-        }
-        values.push(s);
+    if (orderby) {
+        sql_products.orderby(orderby, order);
     }
-    // favorite (>=, <=)
-    // TODO:前端用升冪降冪
-    // owners
-    // TODO:前端用升冪降冪
-    // limit
     if (limit) {
-        sql = sql.concat(' LIMIT ?');
-        values.push(limit);
+        sql_products.limit(limit);
     }
-    console.log('sql :>> ', sql);
-    console.log('values :>> ', values);
-
-    function where(sql, condition, operator = 'AND') {
-        return sql.includes('WHERE')
-            ? sql.concat(` ${operator} `, '(', condition, ')')
-            : sql.concat(' WHERE ', '(', condition, ')');
+    if (offset) {
+        sql_products.offset(offset);
     }
 
-    try {
-        let [data, datafileds] = await connection.execute(sql, values);
-        console.log('data :>> ', data);
-        // console.log('datafileds :>> ', datafileds);
-        // res.json(data);
-        res.json({
-            statusCode: 2002,
-            products: data,
-        });
-    } catch (err) {
-        console.log('err :>> ', err);
+    // 發出請求
+    let result = true;
+    result &= await sql_products.run();
+    result &= await sql_count.run();
+
+    console.log('sql_products.data :>> ', sql_products.data);
+    console.log('sql_count.data :>> ', sql_count.data);
+
+    // 失敗
+    if (!result) {
     }
+
+    // 成功
+    res.json({
+        statusCode: 2002,
+        products: sql_products.data,
+        total: sql_count.data[0].total,
+    });
 };
+
+class sql {
+    constructor(command, columns, table) {
+        this._sql = `${command} ${columns.join(', ')} FROM ${table}`;
+        this._values = [];
+        this._data = null;
+    }
+
+    // JOIN
+    join(table, on, methd = 'JOIN') {
+        // sql injection (待處理)
+        this._sql += ` JOIN ${table} ON ${on}`;
+    }
+
+    // WHERE
+    id(arr) {
+        if (!Array.isArray(arr)) arr = JSON.parse(arr);
+        this._sql += this._sql.includes('WHERE') ? ' AND' : ' WHERE';
+        this._sql += ` (id IN (${arr.reduce(
+            (a, c, i) => (i !== 0 ? a + ', ?' : a),
+            '?'
+        )}))`;
+        arr.forEach((e) => this._values.push(e));
+    }
+
+    keyword(str) {
+        this._sql += this._sql.includes('WHERE') ? ' AND' : ' WHERE';
+        this._sql += ` (name LIKE ?)`;
+        this._values.push('%' + str + '%');
+    }
+
+    series(str) {
+        this._sql += this._sql.includes('WHERE') ? ' AND' : ' WHERE';
+        this._sql += ` (product_series_id = ?)`;
+        this._values.push(str);
+    }
+
+    tags(arr) {
+        if (!Array.isArray(arr)) arr = JSON.parse(arr);
+        this._sql += this._sql.includes('WHERE') ? ' AND' : ' WHERE';
+        this._sql += ` (id IN (${arr.reduce((a, c) => a + ', ?', '')}))`;
+        arr.forEach((e) => this._values.push(e));
+    }
+
+    price(arr) {
+        if (!Array.isArray(arr)) arr = JSON.parse(arr);
+        // this._sql += ` (price BETWEEN ? AND ?)`;
+        if (arr[0] > 0) {
+            this._sql += this._sql.includes('WHERE') ? ' AND' : ' WHERE';
+            this._sql += ` (price >= ?)`;
+            this._values.push(arr[0]);
+        }
+        if (arr[1] > 0) {
+            this._sql += this._sql.includes('WHERE') ? ' AND' : ' WHERE';
+            this._sql += ` (price <= ?)`;
+            this._values.push(arr[1]);
+        }
+    }
+
+    orderby(col, order = 0) {
+        const white = [
+            'id',
+            'name',
+            'descp',
+            'img',
+            'price',
+            'currency',
+            'favorites',
+            'owners',
+            'stars',
+            'review_counts',
+            'created_at',
+            'product_series_id',
+        ];
+        if (white.includes(col)) {
+            this._sql += ` ORDER BY ${col} ${order == 1 ? 'DESC' : ''}`;
+        }
+    }
+
+    limit(int) {
+        this._sql += ` LIMIT ?`;
+        this._values.push(int);
+    }
+
+    offset(int) {
+        this._sql += ` OFFSET ?`;
+        this._values.push(int);
+    }
+
+    async run() {
+        try {
+            console.log('this._sql :>> ', this._sql);
+            console.log('this._values :>> ', this._values);
+            const [d, f] = await connection.execute(this._sql, this._values);
+            console.log('d :>> ', d);
+            this._data = d;
+            return true;
+        } catch (err) {
+            console.log('err :>> ', err);
+            return false;
+        }
+    }
+
+    get data() {
+        return this._data;
+    }
+}
 
 module.exports = {
     getData,
