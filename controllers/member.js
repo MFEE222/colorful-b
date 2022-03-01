@@ -6,13 +6,13 @@ const getReview = async (req, res, next) => {
     console.log('req.query :>> ', req.query);
     //TODO:判斷session = uid
     let value = [uid];
-    // let sqlCounts = `SELECT COUNT(*)
-    //                 FROM reviews
-    //                 WHERE reviews.user_id = ? AND`;
+    let sqlCounts = `SELECT COUNT(*)
+                    FROM reviews
+                    WHERE reviews.user_id = ? AND`;
 
-    // if (statusId == 1) sqlCounts += ` (review_status_id IN (2,4))`;
-    // if (statusId == 2) sqlCounts += ` (review_status_id = 2)`;
-    // if (statusId == 3) sqlCounts += ` (review_status_id = 4)`;
+    if (statusId == 1) sqlCounts += ` (review_status_id IN (2,4))`;
+    if (statusId == 2) sqlCounts += ` (review_status_id = 2)`;
+    if (statusId == 3) sqlCounts += ` (review_status_id = 4)`;
 
     let sql = `SELECT  reviews.id,
                        reviews.title,
@@ -22,37 +22,38 @@ const getReview = async (req, res, next) => {
                        reviews.likes,
                        reviews.created_at,
                        reviews.user_id,
-                       reviews.status_id
+                       reviews.review_status_id,
                        reviews.product_id,
                        products.name,
                        products.img AS products_img,
                        products.descp
                 FROM reviews
-                LEFT JOIN products ON reviews.product_id = products.id
+                JOIN products ON reviews.product_id = products.id
                 WHERE reviews.user_id = ? AND`;
 
     if (statusId == 1) sql += ` (review_status_id IN (2,4))`;
     if (statusId == 2) sql += ` (review_status_id = 2)`;
     if (statusId == 3) sql += ` (review_status_id = 4)`;
+
     if (limit) {
-        sql += ` Limit ?`;
+        sql += ` LIMIT ?`;
         value.push(limit);
     }
     if (offset) {
         sql += ` OFFSET ?`;
         value.push(offset);
     }
-    console.log('sql :>> ', sql);
+    // console.log('sql :>> ', sql);
     // console.log('sqlCounts :>> ', sqlCounts);
 
     try {
-        // const [rows, Rowsfields] = await connection.execute(sqlCounts, [uid]);
+        const [rows, Rowsfields] = await connection.execute(sqlCounts, [uid]);
         const [data, fields] = await connection.execute(sql, value);
         // console.log('rows :>> ', rows);
 
         res.json({
             data,
-            // rows,
+            rows,
         });
         // console.log('counts :>> ', counts);
     } catch (err) {
