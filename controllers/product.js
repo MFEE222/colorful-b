@@ -336,7 +336,7 @@ const getData = async function (req, res, next) {
         sql_products.price(price);
     }
     if (orderby) {
-        const o = order === 0 ? 0 : 1;
+        const o = order == 0 ? 0 : 1;
         sql_products.orderby(orderby, o);
     }
     if (limit) {
@@ -440,7 +440,7 @@ class sql {
             'product_series_id',
         ];
         if (white.includes(col)) {
-            this._sql += ` ORDER BY ${col} ${order == 1 ? 'DESC' : ''}`;
+            this._sql += ` ORDER BY ${col} ${order == 1 ? 'DESC' : 'ASC'}`;
         }
     }
 
