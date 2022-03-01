@@ -281,7 +281,7 @@ const getData = async function (req, res, next) {
         order,
         limit,
     } = req.query;
-    console.log('req.query:>> ', req.query);
+    // console.log('req.query:>> ', req.query);
     // 3 個 SQL
     const sql_count = new sql('SELECT', ['COUNT(id) AS total'], 'products');
     // const sql_tags = new sql('SELECT', ['product_id'], 'product_tag');
@@ -336,8 +336,8 @@ const getData = async function (req, res, next) {
     result &= await sql_products.run();
     result &= await sql_count.run();
 
-    console.log('sql_products.data :>> ', sql_products.data);
-    console.log('sql_count.data :>> ', sql_count.data);
+    // console.log('sql_products.data :>> ', sql_products.data);
+    // console.log('sql_count.data :>> ', sql_count.data);
 
     // 失敗
     if (!result) {
@@ -441,14 +441,14 @@ class sql {
 
     async run() {
         try {
-            console.log('this._sql :>> ', this._sql);
-            console.log('this._values :>> ', this._values);
+            // console.log('this._sql :>> ', this._sql);
+            // console.log('this._values :>> ', this._values);
             const [d, f] = await connection.execute(this._sql, this._values);
-            console.log('d :>> ', d);
+            // console.log('d :>> ', d);
             this._data = d;
             return true;
         } catch (err) {
-            console.log('err :>> ', err);
+            // console.log('err :>> ', err);
             return false;
         }
     }
