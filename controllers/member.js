@@ -6,7 +6,7 @@ const getReview = async (req, res, next) => {
     console.log('req.query :>> ', req.query);
     //TODO:判斷session = uid
     let value = [uid];
-    let sqlCounts = `SELECT COUNT(*)
+    let sqlCounts = `SELECT COUNT(*) AS total 
                     FROM reviews
                     WHERE reviews.user_id = ? AND`;
 
@@ -49,13 +49,13 @@ const getReview = async (req, res, next) => {
     try {
         const [rows, Rowsfields] = await connection.execute(sqlCounts, [uid]);
         const [data, fields] = await connection.execute(sql, value);
-        // console.log('rows :>> ', rows);
+        // console.log('fields :>> ', fields);
 
         res.json({
             data,
-            rows,
+            rows: rows[0].total,
         });
-        // console.log('counts :>> ', counts);
+        console.log('rows :>> ', rows[0].total);
     } catch (err) {
         console.log('err :>> ', err);
     }
