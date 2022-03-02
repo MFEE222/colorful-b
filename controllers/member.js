@@ -1,5 +1,8 @@
 const res = require('express/lib/response');
 const connection = require('../utils/db');
+const multer = require('multer');
+const upload = multer();
+const { resourceUsage } = require('process');
 
 const getReview = async (req, res, next) => {
     const { uid, statusId, limit, offset } = req.query; //會員id
@@ -60,6 +63,11 @@ const getReview = async (req, res, next) => {
         console.log('err :>> ', err);
     }
 };
+const getUpdate = async (req, res, next) => {
+    console.log('id :>> ', req.body);
+    // console.log('imgs :>> ', imgs);
+};
 module.exports = {
     getReview,
+    getUpdate,
 };

@@ -7,6 +7,8 @@ const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 require('dotenv').config();
 const cors = require('cors');
+const multer = require('multer');
+const upload = multer();
 
 // 中間件 middlewares
 const expressSession = require('./middlewares/session');
@@ -35,7 +37,8 @@ app.set('view engine', 'pug');
 // 一般中間件
 app.use(logger('dev'));
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({ extended: true }));
+app.use(upload.array());
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(expressSession);
