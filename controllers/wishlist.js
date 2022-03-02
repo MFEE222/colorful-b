@@ -2,7 +2,7 @@
 const connection = require('../utils/db');
 
 //取得全部資料
-const getData = async (req, res, next) => {
+const getData = function (req, res, next) {
     console.log('123');
     const { userid } = req.query;
 
