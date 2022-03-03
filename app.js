@@ -7,6 +7,8 @@ const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 require('dotenv').config();
 const cors = require('cors');
+const multer = require('multer');
+const upload = multer();
 
 // 中間件 middlewares
 const expressSession = require('./middlewares/session');
@@ -35,32 +37,22 @@ app.set('view engine', 'pug');
 // 一般中間件
 app.use(logger('dev'));
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(expressSession);
 
 // 路由中間件
-// app.use('/api', function (req, res, next) {
-//     res.json({
-//         name: 'liz',
-//         favoriate: 'cake',
-//     });
-// });
 
 app.use('/api/auth', authRouter);
 app.use('/api/cart', cartRouter);
 app.use('/api/home', homeRouter);
 app.use('/api/member', memberRouter);
 app.use('/api/products', productRouter);
-
-// app.use('/api/product',(req,res,next)=>{
-//     console.info('hi')
-//     res.json({
-//         name: 'i am product'
-//     });
-
-// });
+// 測試用
+app.use('/multer', function (req, res) {
+    res.sendFile(path.join(__dirname, 'public/tmp/multer.html'));
+});
 
 // 錯誤中間件
 app.use(function (req, res, next) {

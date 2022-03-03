@@ -282,6 +282,7 @@ const getData = async function (req, res, next) {
         order,
         limit,
     } = req.query;
+
     // console.log('ids :>> ', ids);
     // console.log('keyword :>> ', keyword);
     // console.log('date :>> ', date);
@@ -296,6 +297,7 @@ const getData = async function (req, res, next) {
     // console.log('limit :>> ', limit);
 
     // 過濾 query
+
     // 3 個 SQL
     const sql_count = new sql('SELECT', ['COUNT(id) AS total'], 'products');
     // const sql_tags = new sql('SELECT', ['product_id'], 'product_tag');
@@ -351,8 +353,8 @@ const getData = async function (req, res, next) {
     result &= await sql_products.run();
     result &= await sql_count.run();
 
-    console.log('sql_products.data :>> ', sql_products.data);
-    console.log('sql_count.data :>> ', sql_count.data);
+    // console.log('sql_products.data :>> ', sql_products.data);
+    // console.log('sql_count.data :>> ', sql_count.data);
 
     // 失敗
     if (!result) {
