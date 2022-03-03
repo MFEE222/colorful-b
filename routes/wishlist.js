@@ -18,7 +18,7 @@ router.get('/', async (req, res, next) => {
                     created_at,
                     product_id,
                     user_id
-               FROM wishlist
+               FROM favorites
                WHERE user_id = ?`;
 
     try {
