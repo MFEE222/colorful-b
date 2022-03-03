@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Mar 01, 2022 at 01:55 PM
+-- Generation Time: Mar 03, 2022 at 08:24 AM
 -- Server version: 10.4.21-MariaDB
 -- PHP Version: 8.1.0
 
@@ -84,30 +84,272 @@ CREATE TABLE `download` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `favorite`
---
-
-DROP TABLE IF EXISTS `favorite`;
-CREATE TABLE `favorite` (
-  `id` int(11) NOT NULL,
-  `created_at` datetime NOT NULL,
-  `product_id` int(11) NOT NULL,
-  `user_id` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
--- --------------------------------------------------------
-
---
 -- Table structure for table `favorites`
 --
 
 DROP TABLE IF EXISTS `favorites`;
 CREATE TABLE `favorites` (
   `id` int(11) NOT NULL,
-  `created_at` datetime NOT NULL,
-  `product_id` int(11) NOT NULL,
-  `user_id` int(11) NOT NULL
+  `created_at` date DEFAULT NULL,
+  `product_id` int(11) DEFAULT NULL,
+  `user_id` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Dumping data for table `favorites`
+--
+
+INSERT INTO `favorites` (`id`, `created_at`, `product_id`, `user_id`) VALUES
+(1, '2021-05-25', 25, 97),
+(2, '2022-01-24', 3, 12),
+(3, '2021-06-26', 19, 177),
+(4, '2021-02-07', 39, 15),
+(5, '2021-08-01', 41, 177),
+(6, '2022-01-16', 12, 150),
+(7, '2021-02-08', 42, 128),
+(8, '2021-08-10', 13, 62),
+(9, '2021-06-21', 8, 51),
+(10, '2021-11-03', 24, 191),
+(11, '2021-04-25', 6, 57),
+(12, '2021-12-23', 44, 61),
+(13, '2021-02-20', 30, 20),
+(14, '2021-08-16', 2, 203),
+(15, '2021-09-06', 33, 69),
+(16, '2022-01-02', 43, 184),
+(17, '2021-09-26', 9, 65),
+(18, '2021-08-01', 16, 186),
+(19, '2022-02-21', 21, 202),
+(20, '2021-04-18', 17, 83),
+(21, '2022-01-30', 2, 205),
+(22, '2021-04-16', 12, 142),
+(23, '2021-11-07', 19, 15),
+(24, '2021-04-25', 1, 240),
+(25, '2021-05-02', 1, 14),
+(26, '2021-05-18', 36, 141),
+(27, '2021-10-31', 34, 27),
+(28, '2021-08-12', 38, 25),
+(29, '2021-05-16', 3, 125),
+(30, '2021-12-25', 44, 165),
+(31, '2021-04-08', 20, 16),
+(32, '2021-10-29', 15, 26),
+(33, '2021-06-23', 37, 180),
+(34, '2021-09-19', 43, 10),
+(35, '2021-03-12', 32, 62),
+(36, '2021-11-11', 34, 205),
+(37, '2021-10-26', 6, 8),
+(38, '2021-04-25', 14, 212),
+(39, '2021-06-27', 4, 21),
+(40, '2021-09-18', 32, 195),
+(41, '2021-07-04', 12, 83),
+(42, '2021-04-30', 21, 19),
+(43, '2021-09-15', 35, 68),
+(44, '2021-03-25', 11, 169),
+(45, '2021-02-14', 30, 46),
+(46, '2021-11-25', 15, 159),
+(47, '2021-08-14', 29, 189),
+(48, '2021-12-30', 43, 75),
+(49, '2021-09-24', 6, 144),
+(50, '2021-02-26', 37, 178),
+(51, '2021-06-27', 30, 144),
+(52, '2021-06-27', 41, 226),
+(53, '2021-11-11', 39, 14),
+(54, '2021-10-30', 34, 42),
+(55, '2021-03-04', 43, 51),
+(56, '2021-03-15', 1, 174),
+(57, '2021-08-15', 38, 5),
+(58, '2021-07-28', 24, 128),
+(59, '2021-02-12', 41, 100),
+(60, '2021-08-05', 22, 185),
+(61, '2021-07-25', 35, 38),
+(62, '2021-01-29', 8, 245),
+(63, '2021-08-07', 39, 147),
+(64, '2021-12-22', 23, 171),
+(65, '2021-04-15', 35, 150),
+(66, '2021-11-04', 44, 12),
+(67, '2021-02-08', 23, 169),
+(68, '2021-12-03', 12, 157),
+(69, '2022-02-01', 43, 170),
+(70, '2021-10-14', 16, 150),
+(71, '2021-01-20', 27, 48),
+(72, '2021-03-01', 39, 223),
+(73, '2021-08-09', 16, 86),
+(74, '2021-06-19', 25, 70),
+(75, '2021-03-22', 42, 2),
+(76, '2021-11-27', 16, 197),
+(77, '2021-10-28', 36, 85),
+(78, '2021-04-18', 30, 168),
+(79, '2021-08-23', 10, 177),
+(80, '2022-01-18', 21, 100),
+(81, '2022-01-12', 2, 155),
+(82, '2021-07-20', 37, 40),
+(83, '2021-07-08', 14, 182),
+(84, '2021-01-30', 29, 65),
+(85, '2021-07-03', 32, 135),
+(86, '2021-06-02', 39, 236),
+(87, '2021-02-06', 31, 142),
+(88, '2021-09-01', 28, 61),
+(89, '2021-05-13', 12, 23),
+(90, '2021-12-15', 7, 51),
+(91, '2021-10-16', 7, 98),
+(92, '2021-03-21', 7, 229),
+(93, '2021-10-25', 18, 49),
+(94, '2021-11-14', 28, 54),
+(95, '2021-06-20', 14, 185),
+(96, '2021-06-04', 34, 227),
+(97, '2021-06-04', 18, 248),
+(98, '2021-08-26', 18, 193),
+(99, '2021-02-20', 12, 21),
+(100, '2021-06-30', 30, 234),
+(101, '2022-01-02', 30, 29),
+(102, '2021-10-08', 21, 210),
+(103, '2021-03-03', 10, 51),
+(104, '2021-03-02', 5, 167),
+(105, '2022-01-26', 8, 177),
+(106, '2021-08-06', 10, 136),
+(107, '2021-04-20', 38, 152),
+(108, '2021-08-08', 17, 183),
+(109, '2021-06-04', 4, 132),
+(110, '2021-06-11', 26, 64),
+(111, '2021-10-28', 29, 190),
+(112, '2021-11-27', 41, 72),
+(113, '2021-08-06', 18, 146),
+(114, '2021-10-18', 20, 185),
+(115, '2021-12-02', 13, 240),
+(116, '2021-03-12', 9, 167),
+(117, '2021-07-30', 30, 105),
+(118, '2021-10-24', 40, 202),
+(119, '2021-01-30', 23, 152),
+(120, '2021-03-06', 18, 48),
+(121, '2021-02-22', 3, 115),
+(122, '2021-01-24', 8, 75),
+(123, '2021-08-17', 11, 50),
+(124, '2022-02-20', 43, 183),
+(125, '2021-08-09', 33, 214),
+(126, '2021-08-19', 22, 164),
+(127, '2021-08-05', 14, 133),
+(128, '2021-10-11', 11, 59),
+(129, '2022-02-06', 3, 101),
+(130, '2021-08-03', 21, 228),
+(131, '2021-06-29', 11, 247),
+(132, '2021-02-24', 21, 160),
+(133, '2021-03-05', 5, 208),
+(134, '2021-09-20', 43, 23),
+(135, '2021-03-31', 43, 62),
+(136, '2021-03-24', 14, 19),
+(137, '2021-06-05', 26, 92),
+(138, '2021-11-16', 33, 188),
+(139, '2021-09-06', 33, 198),
+(140, '2021-11-29', 29, 35),
+(141, '2021-12-02', 21, 175),
+(142, '2021-05-30', 7, 27),
+(143, '2021-06-03', 12, 195),
+(144, '2021-03-26', 2, 75),
+(145, '2021-09-13', 44, 212),
+(146, '2022-01-14', 34, 157),
+(147, '2021-06-08', 7, 76),
+(148, '2021-05-01', 34, 56),
+(149, '2021-06-21', 14, 250),
+(150, '2021-09-10', 16, 146),
+(151, '2021-03-27', 15, 153),
+(152, '2021-04-20', 19, 128),
+(153, '2021-07-03', 42, 154),
+(154, '2021-04-09', 27, 208),
+(155, '2021-08-04', 29, 245),
+(156, '2022-01-27', 26, 38),
+(157, '2021-04-17', 40, 11),
+(158, '2022-01-27', 7, 115),
+(159, '2021-03-06', 34, 223),
+(160, '2021-03-15', 16, 45),
+(161, '2021-09-20', 44, 53),
+(162, '2021-04-10', 30, 183),
+(163, '2021-10-20', 11, 75),
+(164, '2022-01-20', 3, 24),
+(165, '2021-06-30', 28, 212),
+(166, '2021-04-26', 17, 71),
+(167, '2021-04-09', 9, 209),
+(168, '2021-12-25', 10, 19),
+(169, '2021-11-10', 23, 65),
+(170, '2021-06-18', 4, 152),
+(171, '2021-07-27', 43, 157),
+(172, '2021-06-11', 25, 56),
+(173, '2021-08-06', 23, 114),
+(174, '2022-01-27', 23, 59),
+(175, '2021-01-26', 32, 89),
+(176, '2021-12-13', 9, 208),
+(177, '2021-03-17', 3, 197),
+(178, '2021-08-24', 42, 243),
+(179, '2021-11-02', 37, 30),
+(180, '2021-12-22', 4, 27),
+(181, '2021-10-12', 14, 96),
+(182, '2021-05-28', 15, 113),
+(183, '2021-03-07', 28, 247),
+(184, '2022-01-03', 13, 244),
+(185, '2021-10-14', 11, 84),
+(186, '2021-04-16', 33, 229),
+(187, '2021-07-25', 22, 130),
+(188, '2022-01-15', 4, 26),
+(189, '2021-03-26', 18, 245),
+(190, '2021-10-17', 14, 70),
+(191, '2021-05-07', 25, 16),
+(192, '2021-02-02', 32, 162),
+(193, '2021-03-24', 24, 82),
+(194, '2021-02-06', 23, 224),
+(195, '2021-12-22', 10, 88),
+(196, '2021-07-14', 41, 194),
+(197, '2021-12-23', 4, 140),
+(198, '2021-04-23', 9, 117),
+(199, '2021-06-27', 11, 8),
+(200, '2021-12-06', 37, 73),
+(201, '2021-07-02', 38, 108),
+(202, '2021-10-01', 9, 141),
+(203, '2021-08-03', 28, 74),
+(204, '2022-01-02', 8, 105),
+(205, '2021-02-19', 7, 198),
+(206, '2021-03-29', 7, 232),
+(207, '2021-03-10', 34, 240),
+(208, '2021-09-18', 27, 117),
+(209, '2021-02-05', 41, 148),
+(210, '2021-03-20', 6, 150),
+(211, '2021-10-06', 5, 60),
+(212, '2022-01-23', 35, 11),
+(213, '2021-06-27', 8, 101),
+(214, '2021-01-26', 43, 250),
+(215, '2022-02-08', 5, 39),
+(216, '2021-08-21', 37, 15),
+(217, '2021-11-09', 19, 113),
+(218, '2021-11-22', 4, 136),
+(219, '2021-05-17', 10, 119),
+(220, '2021-05-13', 16, 236),
+(221, '2021-03-24', 20, 59),
+(222, '2021-05-29', 24, 15),
+(223, '2021-08-26', 23, 71),
+(224, '2021-12-01', 19, 25),
+(225, '2021-10-12', 21, 187),
+(226, '2021-05-12', 38, 128),
+(227, '2021-11-13', 15, 87),
+(228, '2022-02-25', 41, 201),
+(229, '2021-09-14', 33, 84),
+(230, '2021-10-22', 18, 81),
+(231, '2021-11-19', 29, 204),
+(232, '2021-06-13', 14, 30),
+(233, '2021-10-31', 20, 74),
+(234, '2022-01-25', 36, 107),
+(235, '2021-12-01', 43, 75),
+(236, '2021-08-02', 38, 111),
+(237, '2021-12-25', 18, 17),
+(238, '2021-08-13', 21, 215),
+(239, '2021-04-13', 28, 173),
+(240, '2021-06-26', 31, 90),
+(241, '2021-08-25', 28, 102),
+(242, '2021-08-25', 20, 206),
+(243, '2021-08-24', 9, 7),
+(244, '2021-12-14', 2, 108),
+(245, '2022-01-25', 40, 11),
+(246, '2021-10-25', 34, 29),
+(247, '2021-08-09', 15, 41),
+(248, '2021-02-21', 27, 188),
+(249, '2021-06-21', 12, 5),
+(250, '2021-12-09', 20, 7);
 
 -- --------------------------------------------------------
 
@@ -777,21 +1019,15 @@ INSERT INTO `products` (`id`, `name`, `descp`, `img`, `price`, `currency`, `favo
 (33, '清新明亮', 'Proin leo odio, porttitor id, consequat in, consequat ut, nulla. Sed accumsan felis. Ut at dolor quis odio consequat varius.\n\nInteger ac leo. Pellentesque ultrices mattis odio. Donec vitae nisi.\n\nNam ultrices, libero non mattis pulvinar, nulla pede ullamcorper augue, a suscipit nulla elit ac nulla. Sed vel enim sit amet nunc viverra dapibus. Nulla suscipit ligula in lacus.', 'images/wedding/g1', 22, 'NT', 353, 209, '1.3', 99, '2021-06-13', '2022-12-31', 3, 3),
 (34, '命中註定', 'Duis bibendum. Morbi non quam nec dui luctus rutrum. Nulla tellus.\n\nIn sagittis dui vel nisl. Duis ac nibh. Fusce lacus purus, aliquet at, feugiat non, pretium quis, lectus.\n\nSuspendisse potenti. In eleifend quam a odio. In hac habitasse platea dictumst.\n\nMaecenas ut massa quis augue luctus tincidunt. Nulla mollis molestie lorem. Quisque ut erat.', 'images/wedding/h1', 49, 'NT', 76, 80, '1.9', 99, '2021-08-05', '2022-08-10', 3, 3),
 (35, '真愛每兩天', 'Proin leo odio, porttitor id, consequat in, consequat ut, nulla. Sed accumsan felis. Ut at dolor quis odio consequat varius.\n\nInteger ac leo. Pellentesque ultrices mattis odio. Donec vitae nisi.\n\nNam ultrices, libero non mattis pulvinar, nulla pede ullamcorper augue, a suscipit nulla elit ac nulla. Sed vel enim sit amet nunc viverra dapibus. Nulla suscipit ligula in lacus.', 'images/wedding/i1', 68, 'NT', 177, 70, '1.5', 99, '2021-02-16', '2022-08-14', 5, 3),
-(36, 'Tart - Pecan Butter Squares', 'Curabitur at ipsum ac tellus semper interdum. Mauris ullamcorper purus sit amet nulla. Quisque arcu libero, rutrum ac, lobortis vel, dapibus at, diam.', 'images/portrait', 46, 'NT', 67, 70, '2.0', 99, '2021-06-13', '2022-11-19', 4, 1),
+(36, '暖心抹茶', 'Vestibulum quam sapien, varius ut, blandit non, interdum in, ante. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Duis faucibus accumsan odio. Curabitur convallis.\n\nDuis consequat dui nec nisi volutpat eleifend. Donec ut dolor. Morbi vel lectus in quam fringilla rhoncus.\n\nMauris enim leo, rhoncus sed, vestibulum sit amet, cursus id, turpis. Integer aliquet, massa id lobortis convallis, tortor risus dapibus augue, vel accumsan tellus nisi eu orci. Mauris lacinia sapien quis libero.\n\nNullam sit amet turpis elementum ligula vehicula consequat. Morbi a ipsum. Integer a nibh.', 'images/food/g1', 69, 'NT', 422, 209, '3.5', 99, '2021-11-21', '2022-01-26', 5, 2),
 (37, '午夜巴黎', 'Fusce posuere felis sed lacus. Morbi sem mauris, laoreet ut, rhoncus aliquet, pulvinar sed, nisl. Nunc rhoncus dui vel sem.\n\nSed sagittis. Nam congue, risus semper porta volutpat, quam pede lobortis ligula, sit amet eleifend pede libero quis orci. Nullam molestie nibh in lectus.\n\nPellentesque at nulla. Suspendisse potenti. Cras in purus eu magna vulputate luctus.\n\nCum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Vivamus vestibulum sagittis sapien. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.', 'images/scenery/g1', 63, 'NT', 355, 238, '4.7', 99, '2021-11-07', '2022-06-25', 3, 5),
-(38, 'Coffee - Colombian, Portioned', 'Duis bibendum, felis sed interdum venenatis, turpis enim blandit mi, in porttitor pede justo eu massa. Donec dapibus. Duis at velit eu est congue elementum.\n\nIn hac habitasse platea dictumst. Morbi vestibulum, velit id pretium iaculis, diam erat fermentum justo, nec condimentum neque sapien placerat ante. Nulla justo.\n\nAliquam quis turpis eget elit sodales scelerisque. Mauris sit amet eros. Suspendisse accumsan tortor quis turpis.\n\nSed ante. Vivamus tortor. Duis mattis egestas metus.', 'images/portrait', 22, 'NT', 437, 174, '3.8', 99, '2021-01-06', '2022-08-07', 4, 1),
+(38, '睡前可可', 'Proin eu mi. Nulla ac enim. In tempor, turpis nec euismod scelerisque, quam turpis adipiscing lorem, vitae mattis nibh ligula nec sem.\n\nDuis aliquam convallis nunc. Proin at turpis a pede posuere nonummy. Integer non velit.\n\nDonec diam neque, vestibulum eget, vulputate ut, ultrices vel, augue. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Donec pharetra, magna vestibulum aliquet ultrices, erat tortor sollicitudin mi, sit amet lobortis sapien sapien non mi. Integer ac neque.', 'images/food/h1', 33, 'NT', 118, 96, '2.1', 99, '2021-05-16', '2022-12-13', 1, 2),
 (39, '烈陽山脊', 'Morbi non lectus. Aliquam sit amet diam in magna bibendum imperdiet. Nullam orci pede, venenatis non, sodales sed, tincidunt eu, felis.\n\nFusce posuere felis sed lacus. Morbi sem mauris, laoreet ut, rhoncus aliquet, pulvinar sed, nisl. Nunc rhoncus dui vel sem.\n\nSed sagittis. Nam congue, risus semper porta volutpat, quam pede lobortis ligula, sit amet eleifend pede libero quis orci. Nullam molestie nibh in lectus.', 'images/scenery/h1', 26, 'NT', 94, 34, '3.5', 99, '2021-07-18', '2022-05-02', 3, 5),
 (40, '酸甜滋味', 'Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Vivamus vestibulum sagittis sapien. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.\n\nEtiam vel augue. Vestibulum rutrum rutrum neque. Aenean auctor gravida sem.\n\nPraesent id massa id nisl venenatis lacinia. Aenean sit amet justo. Morbi ut odio.\n\nCras mi pede, malesuada in, imperdiet et, commodo vulputate, justo. In blandit ultrices enim. Lorem ipsum dolor sit amet, consectetuer adipiscing elit.', 'images/food/f1', 75, 'NT', 293, 130, '3.2', 99, '2021-06-01', '2022-05-06', 3, 2),
 (41, '有你真好', 'Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Vivamus vestibulum sagittis sapien. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.\n\nEtiam vel augue. Vestibulum rutrum rutrum neque. Aenean auctor gravida sem.', 'images/wedding/j1', 42, 'NT', 490, 216, '4.3', 99, '2021-01-31', '2022-10-12', 5, 3),
-(42, 'Eggplant - Baby', 'Phasellus in felis. Donec semper sapien a libero. Nam dui.\n\nProin leo odio, porttitor id, consequat in, consequat ut, nulla. Sed accumsan felis. Ut at dolor quis odio consequat varius.\n\nInteger ac leo. Pellentesque ultrices mattis odio. Donec vitae nisi.', 'images/portrait', 66, 'NT', 166, 37, '5.0', 99, '2021-08-29', '2022-12-13', 4, 1),
-(43, 'Cookie Chocolate Chip With', 'Integer ac leo. Pellentesque ultrices mattis odio. Donec vitae nisi.\n\nNam ultrices, libero non mattis pulvinar, nulla pede ullamcorper augue, a suscipit nulla elit ac nulla. Sed vel enim sit amet nunc viverra dapibus. Nulla suscipit ligula in lacus.\n\nCurabitur at ipsum ac tellus semper interdum. Mauris ullamcorper purus sit amet nulla. Quisque arcu libero, rutrum ac, lobortis vel, dapibus at, diam.', 'images/food/b1', 24, 'NT', 322, 246, '1.8', 99, '2021-06-10', '2022-07-21', 2, 1),
-(44, '暖心抹茶', 'Vestibulum quam sapien, varius ut, blandit non, interdum in, ante. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Duis faucibus accumsan odio. Curabitur convallis.\n\nDuis consequat dui nec nisi volutpat eleifend. Donec ut dolor. Morbi vel lectus in quam fringilla rhoncus.\n\nMauris enim leo, rhoncus sed, vestibulum sit amet, cursus id, turpis. Integer aliquet, massa id lobortis convallis, tortor risus dapibus augue, vel accumsan tellus nisi eu orci. Mauris lacinia sapien quis libero.\n\nNullam sit amet turpis elementum ligula vehicula consequat. Morbi a ipsum. Integer a nibh.', 'images/food/g1', 69, 'NT', 422, 209, '3.5', 99, '2021-11-21', '2022-01-26', 5, 2),
-(45, '睡前可可', 'Proin eu mi. Nulla ac enim. In tempor, turpis nec euismod scelerisque, quam turpis adipiscing lorem, vitae mattis nibh ligula nec sem.\n\nDuis aliquam convallis nunc. Proin at turpis a pede posuere nonummy. Integer non velit.\n\nDonec diam neque, vestibulum eget, vulputate ut, ultrices vel, augue. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Donec pharetra, magna vestibulum aliquet ultrices, erat tortor sollicitudin mi, sit amet lobortis sapien sapien non mi. Integer ac neque.', 'images/food/h1', 33, 'NT', 118, 96, '2.1', 99, '2021-05-16', '2022-12-13', 1, 2),
-(46, 'Soup - Knorr, French Onion', 'Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Vivamus vestibulum sagittis sapien. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.\n\nEtiam vel augue. Vestibulum rutrum rutrum neque. Aenean auctor gravida sem.\n\nPraesent id massa id nisl venenatis lacinia. Aenean sit amet justo. Morbi ut odio.\n\nCras mi pede, malesuada in, imperdiet et, commodo vulputate, justo. In blandit ultrices enim. Lorem ipsum dolor sit amet, consectetuer adipiscing elit.', 'images/wedding/e1', 67, 'NT', 102, 148, '4.8', 99, '2021-10-14', '2022-08-20', 3, 1),
-(47, 'Steampan - Lid For Half Size', 'Morbi non lectus. Aliquam sit amet diam in magna bibendum imperdiet. Nullam orci pede, venenatis non, sodales sed, tincidunt eu, felis.\n\nFusce posuere felis sed lacus. Morbi sem mauris, laoreet ut, rhoncus aliquet, pulvinar sed, nisl. Nunc rhoncus dui vel sem.\n\nSed sagittis. Nam congue, risus semper porta volutpat, quam pede lobortis ligula, sit amet eleifend pede libero quis orci. Nullam molestie nibh in lectus.\n\nPellentesque at nulla. Suspendisse potenti. Cras in purus eu magna vulputate luctus.', 'images/wedding/e1', 21, 'NT', 247, 122, '3.4', 99, '2021-06-12', '2022-05-01', 3, 1),
-(48, 'Sprite, Diet - 355ml', 'Fusce consequat. Nulla nisl. Nunc nisl.', 'images/portrait', 28, 'NT', 244, 265, '2.3', 99, '2021-03-19', '2022-09-17', 4, 1),
-(49, '滄桑歲月', 'Duis aliquam convallis nunc. Proin at turpis a pede posuere nonummy. Integer non velit.\n\nDonec diam neque, vestibulum eget, vulputate ut, ultrices vel, augue. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Donec pharetra, magna vestibulum aliquet ultrices, erat tortor sollicitudin mi, sit amet lobortis sapien sapien non mi. Integer ac neque.', 'images/film/h1', 57, 'NT', 151, 195, '1.3', 99, '2021-09-07', '2022-02-13', 3, 4),
-(50, 'Muffin Puck Ww Carrot', 'In quis justo. Maecenas rhoncus aliquam lacus. Morbi quis tortor id nulla ultrices aliquet.\n\nMaecenas leo odio, condimentum id, luctus nec, molestie sed, justo. Pellentesque viverra pede ac diam. Cras pellentesque volutpat dui.\n\nMaecenas tristique, est et tempus semper, est quam pharetra magna, ac consequat metus sapien ut nunc. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Mauris viverra diam vitae quam. Suspendisse potenti.\n\nNullam porttitor lacus at turpis. Donec posuere metus vitae ipsum. Aliquam non mauris.', NULL, 64, 'NT', 138, 68, '2.8', 99, '2022-03-05', '2022-09-26', 1, 1);
+(42, '滄桑歲月', 'Duis aliquam convallis nunc. Proin at turpis a pede posuere nonummy. Integer non velit.\n\nDonec diam neque, vestibulum eget, vulputate ut, ultrices vel, augue. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Donec pharetra, magna vestibulum aliquet ultrices, erat tortor sollicitudin mi, sit amet lobortis sapien sapien non mi. Integer ac neque.', 'images/film/h1', 57, 'NT', 151, 195, '1.3', 99, '2021-09-07', '2022-02-13', 3, 4),
+(43, '慕夏記憶', 'Suspendisse potenti. In eleifend quam a odio. In hac habitasse platea dictumst.\r\n', 'images/wedding/k1', 66, 'NT', 53, 62, '4.5', 33, '2021-03-03', '2022-03-30', 1, 3),
+(44, '四季婚禮', 'Curabitur in libero ut massa volutpat convallis. Morbi odio odio, elementum eu, interdum eu, tincidunt in, leo. Maecenas pulvinar lobortis est.\r\n', 'images/wedding/l1', 43, 'NT', 27, 36, '3.5', 72, '2021-03-01', '2022-03-30', 1, 3);
 
 -- --------------------------------------------------------
 
@@ -1527,12 +1763,6 @@ ALTER TABLE `download`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `favorite`
---
-ALTER TABLE `favorite`
-  ADD PRIMARY KEY (`id`);
-
---
 -- Indexes for table `favorites`
 --
 ALTER TABLE `favorites`
@@ -1633,16 +1863,10 @@ ALTER TABLE `download`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `favorite`
---
-ALTER TABLE `favorite`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-
---
 -- AUTO_INCREMENT for table `favorites`
 --
 ALTER TABLE `favorites`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=251;
 
 --
 -- AUTO_INCREMENT for table `orders`
@@ -1672,7 +1896,7 @@ ALTER TABLE `payment_method`
 -- AUTO_INCREMENT for table `products`
 --
 ALTER TABLE `products`
-  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=51;
+  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=45;
 
 --
 -- AUTO_INCREMENT for table `product_series`
