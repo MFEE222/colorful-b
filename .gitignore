@@ -5,3 +5,6 @@ dist
 .DS_Store
 
 /public/images/
+/public/uploads/
+/dng
+/download
