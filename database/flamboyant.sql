@@ -3,7 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
+
 -- Generation Time: Mar 03, 2022 at 04:31 PM
+
 -- Server version: 10.4.21-MariaDB
 -- PHP Version: 8.1.0
 
@@ -2014,6 +2016,14 @@ ALTER TABLE `discount_ticket`
   ADD PRIMARY KEY (`id`);
 
 --
+
+-- Indexes for table `download`
+--
+ALTER TABLE `download`
+  ADD PRIMARY KEY (`id`);
+
+--
+
 -- Indexes for table `favorites`
 --
 ALTER TABLE `favorites`
@@ -2108,6 +2118,14 @@ ALTER TABLE `discount_ticket`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
+
+-- AUTO_INCREMENT for table `download`
+--
+ALTER TABLE `download`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+
 -- AUTO_INCREMENT for table `favorites`
 --
 ALTER TABLE `favorites`

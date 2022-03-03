@@ -266,6 +266,7 @@ const getReviewDetail = async (req, res, next) => {
 // };
 
 const getData = async function (req, res, next) {
+    console.log('req.query:>> ', req.query);
     // 取得 query
     const {
         ids,
@@ -281,7 +282,22 @@ const getData = async function (req, res, next) {
         order,
         limit,
     } = req.query;
-    // console.log('req.query:>> ', req.query);
+
+    // console.log('ids :>> ', ids);
+    // console.log('keyword :>> ', keyword);
+    // console.log('date :>> ', date);
+    // console.log('series :>> ', series);
+    // console.log('price :>> ', price);
+    // console.log('favorites :>> ', favorites);
+    // console.log('owners :>> ', owners);
+    // console.log('stars :>> ', stars);
+    // console.log('offset :>> ', offset);
+    // console.log('orderby :>> ', orderby);
+    // console.log('order :>> ', order);
+    // console.log('limit :>> ', limit);
+
+    // 過濾 query
+
     // 3 個 SQL
     const sql_count = new sql('SELECT', ['COUNT(id) AS total'], 'products');
     // const sql_tags = new sql('SELECT', ['product_id'], 'product_tag');
@@ -313,7 +329,7 @@ const getData = async function (req, res, next) {
         sql_count.keyword(keyword);
         sql_products.keyword(keyword);
     }
-    if (series) {
+    if (series && series > 1) {
         sql_count.series(series);
         sql_products.series(series);
     }
@@ -322,7 +338,8 @@ const getData = async function (req, res, next) {
         sql_products.price(price);
     }
     if (orderby) {
-        sql_products.orderby(orderby, order);
+        const o = order == 0 ? 0 : 1;
+        sql_products.orderby(orderby, o);
     }
     if (limit) {
         sql_products.limit(limit);
@@ -425,7 +442,7 @@ class sql {
             'product_series_id',
         ];
         if (white.includes(col)) {
-            this._sql += ` ORDER BY ${col} ${order == 1 ? 'DESC' : ''}`;
+            this._sql += ` ORDER BY ${col} ${order == 1 ? 'DESC' : 'ASC'}`;
         }
     }
 
