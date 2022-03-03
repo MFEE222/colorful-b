@@ -38,32 +38,21 @@ app.set('view engine', 'pug');
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(upload.array());
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(expressSession);
 
 // 路由中間件
-// app.use('/api', function (req, res, next) {
-//     res.json({
-//         name: 'liz',
-//         favoriate: 'cake',
-//     });
-// });
 
 app.use('/api/auth', authRouter);
 app.use('/api/cart', cartRouter);
 app.use('/api/home', homeRouter);
 app.use('/api/member', memberRouter);
 app.use('/api/products', productRouter);
-
-// app.use('/api/product',(req,res,next)=>{
-//     console.info('hi')
-//     res.json({
-//         name: 'i am product'
-//     });
-
-// });
+// 測試用
+app.use('/multer', function (req, res) {
+    res.sendFile(path.join(__dirname, 'public/tmp/multer.html'));
+});
 
 // 錯誤中間件
 app.use(function (req, res, next) {
