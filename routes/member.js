@@ -10,9 +10,9 @@ const fsPromises = require('fs/promises');
 // 設定檔案上傳路徑、命名規則
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
+        console.log('req.query.stars :>> ', req.query.stars);
         console.log('destination...');
-        console.log('req.body :>> ', req.body);
-        console.log('req.body.rid :>> ', req.body.rid);
+        // console.log('req.body.rid :>> ', req.body.rid);
         const dir = path.join(
             __dirname,
             '../public/uploads/reviews',
@@ -55,7 +55,9 @@ const upload = multer({
 function countStart(req, res, next) {
     console.log('req.body :>> ', req.body);
     console.log('req.body.rid :>> ', req.body.rid);
-    console.log('req.body.message :>> ', req.body.message);
+    // console.log('req.body.message :>> ', req.body.message);
+    console.log('req.query.stars :>> ', req.query.stars);
+
     req.countStart = 1;
     next();
 }
@@ -65,6 +67,9 @@ router.post(
     countStart,
     upload.array('photo', 8),
     function (req, res, next) {
+        console.log('req.query :>> ', req.body.uid);
+        console.log('req.query.photo :>> ', req.body.photo);
+
         res.json({ m: 'success' });
     }
 );
