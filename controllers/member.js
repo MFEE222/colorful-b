@@ -4,6 +4,7 @@ const res = require('express/lib/response');
 const connection = require('../utils/db');
 const { resourceUsage } = require('process');
 
+//名論區data
 const getReview = async (req, res, next) => {
     const { uid, statusId, limit, offset } = req.query; //會員id
     console.log('req.query :>> ', req.query);
@@ -63,7 +64,51 @@ const getReview = async (req, res, next) => {
         console.log('err :>> ', err);
     }
 };
+//下載區data
+const getDownload = async (req, res, next) => {
+    const { uid, statusId, offset } = req.query; //會員id
+    console.log('req.query :>> ', req.query);
+    //TODO:判斷session = uid
+    let value = [uid];
+    let sqlCounts = `SELECT COUNT(*) AS total 
+                    FROM download
+                    WHERE user_id = ?`;
 
+    if (statusId == 1) sqlCounts += ` AND (status_id = 1)`; //id=1 未下載
+    if (statusId == 2) sqlCounts += ` AND (status_id = 2)`; //id=2 已下載
+
+    let sql = `SELECT   download.id,
+                        download.user_id,
+                        download.status_id,
+                        download.product_id,
+                        products.name,
+                        products.img AS products_img,
+               FROM download
+               JOIN products ON download.product_id = products.id
+               WHERE download.user_id = ?`;
+
+    if (statusId == 1) sql += ` AND (download.status_id = 1) LIMIT 8`;
+    if (statusId == 2) sql += ` AND (download.status_id = 2) LIMIT 8`;
+
+    if (offset) {
+        sql += ` OFFSET ?`;
+        value.push(offset);
+    }
+    try {
+        const [rows, Rowsfields] = await connection.execute(sqlCounts, [uid]);
+        const [data, fields] = await connection.execute(sql, value);
+        // console.log('fields :>> ', fields);
+
+        res.json({
+            data,
+            rows: rows[0].total,
+        });
+        console.log('rows :>> ', rows[0].total);
+    } catch (err) {
+        console.log('err :>> ', err);
+    }
+};
 module.exports = {
     getReview,
+    getDownload,
 };

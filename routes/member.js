@@ -76,4 +76,6 @@ router.post(
 
 // router.post('/review/update', memberController.getUpdate);
 router.get('/review', memberController.getReview);
+router.get('/review/download', memberController.getDownload);
+
 module.exports = router;
