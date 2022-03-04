@@ -6,28 +6,25 @@ const memberController = require('../controllers/member');
 const multer = require('multer');
 
 const fsPromises = require('fs/promises');
+const { toUnicode } = require('punycode');
 
 // 設定檔案上傳路徑、命名規則
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        console.log('req.query.stars :>> ', req.query.stars);
-        console.log('destination...');
-        // console.log('req.body.rid :>> ', req.body.rid);
+        // console.log('req.query :>> ', req.query);
         const dir = path.join(
             __dirname,
             '../public/uploads/reviews',
-            `rid-${req.body.rid}`
+            `r-${req.query.rid}`
         );
         if (!fs.existsSync(dir)) fs.mkdirSync(dir);
         cb(null, dir);
     },
 
     filename: function (req, file, cb) {
-        console.log('filename...');
+        !req.count ? (req.count = 1) : req.count++;
         const ext = file.originalname.split('.').pop();
-        cb(null, String(req.countStart++).concat('.', ext));
-        // const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-        // cb(null, file.fieldname + uniqueSuffix + '.' + ext);
+        cb(null, String(req.count).concat('.', ext));
     },
 });
 
@@ -35,7 +32,7 @@ const storage = multer.diskStorage({
 const upload = multer({
     storage: storage,
     fileFilter: function (req, file, cb) {
-        console.log('file.mimetype :>> ', file.mimetype);
+        // console.log('file.mimetype :>> ', file.mimetype);
         if (
             file.mimetype !== 'image/jpeg' &&
             file.mimetype !== 'image/jpg' &&
@@ -52,24 +49,11 @@ const upload = multer({
     },
 });
 
-function countStart(req, res, next) {
-    console.log('req.body :>> ', req.body);
-    console.log('req.body.rid :>> ', req.body.rid);
-    // console.log('req.body.message :>> ', req.body.message);
-    console.log('req.query.stars :>> ', req.query.stars);
-
-    req.countStart = 1;
-    next();
-}
-
 router.post(
     '/review/update',
-    countStart,
-    upload.array('photo', 8),
+    upload.array('photos', 8),
     function (req, res, next) {
-        console.log('req.query :>> ', req.body.uid);
-        console.log('req.query.photo :>> ', req.body.photo);
-
+        // console.log('req.body :>> ', req.body);
         res.json({ m: 'success' });
     }
 );
@@ -77,3 +61,5 @@ router.post(
 // router.post('/review/update', memberController.getUpdate);
 router.get('/review', memberController.getReview);
 module.exports = router;
+
+// ! 目前上傳數超過 multer 會清空目標資料夾，待優化
