@@ -53,10 +53,10 @@ router.post(
     '/review/update',
     upload.array('photos', 8),
     function (req, res, next) {
-        // console.log('req.body :>> ', req.body);
         res.json({ m: 'success' });
     }
 );
+router.post('/review/update/detail', memberController.getUpdateDetail);
 
 // router.post('/review/update', memberController.getUpdate);
 router.get('/review', memberController.getReview);

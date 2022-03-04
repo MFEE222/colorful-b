@@ -64,6 +64,44 @@ const getReview = async (req, res, next) => {
     }
 };
 
+const getUpdateDetail = async (req, res, next) => {
+    console.log('req.body :>> ', req.body);
+    //更新資料庫
+    const { rid, stars, title, content } = req.body;
+    //圖片位置
+    let imgPath = `uploads/reviews/r-${rid}`;
+    console.log('imgPath :>> ', imgPath);
+    //更新edited_at 時間
+    let date = new Date();
+    const formatDate = (date) => {
+        let formatted_date =
+            date.getFullYear() +
+            '/' +
+            (date.getMonth() + 1) +
+            '/' +
+            date.getDate();
+        return formatted_date;
+    };
+    const editDate = formatDate(date);
+    console.log(editDate);
+
+    // ,
+    //
+    try {
+        const [data, fields] = await connection.execute(
+            'UPDATE reviews SET stars = ? ,title = ? ,content = ?, img = ?, edited_at = ?, review_status_id = 4 WHERE id = ?',
+            [stars, title, content, imgPath, editDate, rid]
+        );
+        //TODO:讀取資料夾裡檔案數量
+        res.json({ message: 200, imgPath });
+        console.log('succes :>> ', 'succes');
+    } catch (err) {
+        console.log('err :>> ', err);
+    }
+    // res.json('ok');
+};
 module.exports = {
     getReview,
+    getUpdateDetail,
 };
+//TODO:讀取檔案r-id檔案 看有多少圖片->回傳->前端圖片寫法更新
