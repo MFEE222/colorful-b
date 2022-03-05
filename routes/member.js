@@ -23,7 +23,7 @@ const storage = multer.diskStorage({
     filename: function (req, file, cb) {
         !req.count ? (req.count = 1) : req.count++;
         const ext = file.originalname.split('.').pop();
-        cb(null, String(req.count).concat('.', ext));
+        cb(null, `${String(req.count)}-${Date.now()}.${ext}`);
     },
 });
 
@@ -55,6 +55,7 @@ router.post(
         res.json({ m: 'success' });
     }
 );
+router.get('/review/img/:rid', memberController.getImg);
 router.post('/review/update/detail', memberController.getUpdateDetail);
 
 // router.post('/review/update', memberController.getUpdate);

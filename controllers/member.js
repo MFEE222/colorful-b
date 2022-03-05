@@ -1,6 +1,6 @@
 const path = require('path');
 const multer = require('multer');
-const res = require('express/lib/response');
+// const res = require('express/lib/response');
 const connection = require('../utils/db');
 const { resourceUsage } = require('process');
 const fs = require('fs/promises');
@@ -55,12 +55,37 @@ const getReview = async (req, res, next) => {
         const [rows, Rowsfields] = await connection.execute(sqlCounts, [uid]);
         const [data, fields] = await connection.execute(sql, value);
         // console.log('fields :>> ', fields);
-
         res.json({
             data,
             rows: rows[0].total,
         });
         console.log('rows :>> ', rows[0].total);
+    } catch (err) {
+        console.log('err :>> ', err);
+    }
+};
+//取得初始照片
+const getImg = async (req, res, next) => {
+    console.log('req.params :>> ', req.params);
+    let rid = req.params.rid;
+    try {
+        const [data, fields] = await connection.execute(
+            'SELECT reviews.img FROM reviews WHERE reviews.id = ?',
+            [rid]
+        );
+        //讀取資料夾裡檔案數量
+        const dir = path.join(
+            __dirname,
+            '../public/uploads/reviews',
+            `r-${rid}`
+        );
+        //readdir (promise)
+        const files = await fs.readdir(dir);
+        console.log('files :>> ', files);
+        res.json({
+            data,
+            imgCount: files,
+        });
     } catch (err) {
         console.log('err :>> ', err);
     }
@@ -93,15 +118,8 @@ const getUpdateDetail = async (req, res, next) => {
             'UPDATE reviews SET stars = ? ,title = ? ,content = ?, img = ?, edited_at = ?, review_status_id = 4 WHERE id = ?',
             [stars, title, content, imgPath, editDate, rid]
         );
-        //讀取資料夾裡檔案數量
-        const dir = path.join(
-            __dirname,
-            '../public/uploads/reviews',
-            `r-${rid}`
-        );
-        //readdir (promise)
-        const files = await fs.readdir(dir);
-        res.json({ message: 200, imgPath, imgName: files });
+
+        res.json({ message: 200 });
     } catch (err) {
         console.log('err :>> ', err);
     }
@@ -109,6 +127,7 @@ const getUpdateDetail = async (req, res, next) => {
 };
 module.exports = {
     getReview,
+    getImg,
     getUpdateDetail,
 };
 //TODO:讀取檔案r-id檔案 看有多少圖片->回傳->前端圖片寫法更新
