@@ -3,9 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
-
--- Generation Time: Mar 03, 2022 at 04:31 PM
-
+-- Generation Time: Mar 05, 2022 at 09:51 AM
 -- Server version: 10.4.21-MariaDB
 -- PHP Version: 8.1.0
 
@@ -77,7 +75,7 @@ CREATE TABLE `discount_ticket` (
 
 DROP TABLE IF EXISTS `download`;
 CREATE TABLE `download` (
-  `id` int(11) DEFAULT NULL,
+  `id` int(11) NOT NULL,
   `status` int(11) DEFAULT NULL,
   `created_at` date DEFAULT NULL,
   `user_id` int(11) DEFAULT NULL,
@@ -1285,8 +1283,7 @@ INSERT INTO `products` (`id`, `name`, `descp`, `img`, `price`, `currency`, `favo
 (40, '酸甜滋味', 'Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Vivamus vestibulum sagittis sapien. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.\n\nEtiam vel augue. Vestibulum rutrum rutrum neque. Aenean auctor gravida sem.\n\nPraesent id massa id nisl venenatis lacinia. Aenean sit amet justo. Morbi ut odio.\n\nCras mi pede, malesuada in, imperdiet et, commodo vulputate, justo. In blandit ultrices enim. Lorem ipsum dolor sit amet, consectetuer adipiscing elit.', 'images/food/f1', 75, 'NT', 293, 130, '3.2', 99, '2021-06-01', '2022-05-06', 3, 2),
 (41, '有你真好', 'Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Vivamus vestibulum sagittis sapien. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.\n\nEtiam vel augue. Vestibulum rutrum rutrum neque. Aenean auctor gravida sem.', 'images/wedding/j1', 42, 'NT', 490, 216, '4.3', 99, '2021-01-31', '2022-10-12', 5, 3),
 (42, '滄桑歲月', 'Duis aliquam convallis nunc. Proin at turpis a pede posuere nonummy. Integer non velit.\n\nDonec diam neque, vestibulum eget, vulputate ut, ultrices vel, augue. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Donec pharetra, magna vestibulum aliquet ultrices, erat tortor sollicitudin mi, sit amet lobortis sapien sapien non mi. Integer ac neque.', 'images/film/h1', 57, 'NT', 151, 195, '1.3', 99, '2021-09-07', '2022-02-13', 3, 4),
-(43, '慕夏記憶', 'Suspendisse potenti. In eleifend quam a odio. In hac habitasse platea dictumst.\r\n', 'images/wedding/k1', 66, 'NT', 53, 62, '4.5', 33, '2021-03-03', '2022-03-30', 1, 3),
-(44, '四季婚禮', 'Curabitur in libero ut massa volutpat convallis. Morbi odio odio, elementum eu, interdum eu, tincidunt in, leo. Maecenas pulvinar lobortis est.\r\n', 'images/wedding/l1', 43, 'NT', 27, 36, '3.5', 72, '2021-03-01', '2022-03-30', 1, 3);
+(43, '慕夏記憶', 'Suspendisse potenti. In eleifend quam a odio. In hac habitasse platea dictumst.\r\n', 'images/wedding/k1', 66, 'NT', 53, 62, '4.5', 33, '2021-03-03', '2022-03-30', 1, 3);
 
 -- --------------------------------------------------------
 
@@ -1375,7 +1372,7 @@ INSERT INTO `product_tag` (`id`, `tag_id`, `product_id`) VALUES
 
 DROP TABLE IF EXISTS `reviews`;
 CREATE TABLE `reviews` (
-  `id` int(11) DEFAULT NULL,
+  `id` int(11) NOT NULL,
   `title` text DEFAULT NULL,
   `content` text DEFAULT NULL,
   `stars` int(11) DEFAULT NULL,
@@ -1698,12 +1695,12 @@ INSERT INTO `tag` (`id`, `name`) VALUES
 
 DROP TABLE IF EXISTS `users`;
 CREATE TABLE `users` (
-  `id` int(11) DEFAULT NULL,
+  `id` int(11) NOT NULL,
   `name` varchar(50) DEFAULT NULL,
   `gender` varchar(50) DEFAULT NULL,
   `account` varchar(50) DEFAULT NULL,
   `email` varchar(50) DEFAULT NULL,
-  `password` varchar(50) DEFAULT NULL,
+  `password` varchar(70) DEFAULT NULL,
   `phone` varchar(50) DEFAULT NULL,
   `figure` varchar(50) NOT NULL,
   `birthday` date DEFAULT NULL,
@@ -2016,14 +2013,12 @@ ALTER TABLE `discount_ticket`
   ADD PRIMARY KEY (`id`);
 
 --
-
 -- Indexes for table `download`
 --
 ALTER TABLE `download`
   ADD PRIMARY KEY (`id`);
 
 --
-
 -- Indexes for table `favorites`
 --
 ALTER TABLE `favorites`
@@ -2078,6 +2073,12 @@ ALTER TABLE `product_tag`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `reviews`
+--
+ALTER TABLE `reviews`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `review_status`
 --
 ALTER TABLE `review_status`
@@ -2087,6 +2088,12 @@ ALTER TABLE `review_status`
 -- Indexes for table `tag`
 --
 ALTER TABLE `tag`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `users`
+--
+ALTER TABLE `users`
   ADD PRIMARY KEY (`id`);
 
 --
@@ -2118,14 +2125,12 @@ ALTER TABLE `discount_ticket`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
-
 -- AUTO_INCREMENT for table `download`
 --
 ALTER TABLE `download`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=251;
 
 --
-
 -- AUTO_INCREMENT for table `favorites`
 --
 ALTER TABLE `favorites`
@@ -2159,7 +2164,7 @@ ALTER TABLE `payment_method`
 -- AUTO_INCREMENT for table `products`
 --
 ALTER TABLE `products`
-  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=45;
+  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=44;
 
 --
 -- AUTO_INCREMENT for table `product_series`
@@ -2180,6 +2185,12 @@ ALTER TABLE `product_tag`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
+-- AUTO_INCREMENT for table `reviews`
+--
+ALTER TABLE `reviews`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=251;
+
+--
 -- AUTO_INCREMENT for table `review_status`
 --
 ALTER TABLE `review_status`
@@ -2190,6 +2201,12 @@ ALTER TABLE `review_status`
 --
 ALTER TABLE `tag`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+
+--
+-- AUTO_INCREMENT for table `users`
+--
+ALTER TABLE `users`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=251;
 
 --
 -- AUTO_INCREMENT for table `user_status`
