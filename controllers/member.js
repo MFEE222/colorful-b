@@ -3,7 +3,9 @@ const multer = require('multer');
 const res = require('express/lib/response');
 const connection = require('../utils/db');
 const { resourceUsage } = require('process');
+const fs = require('fs/promises');
 
+// 評論細節
 const getReview = async (req, res, next) => {
     const { uid, statusId, limit, offset } = req.query; //會員id
     console.log('req.query :>> ', req.query);
@@ -85,16 +87,21 @@ const getUpdateDetail = async (req, res, next) => {
     const editDate = formatDate(date);
     console.log(editDate);
 
-    // ,
-    //
     try {
+        //更新 DB
         const [data, fields] = await connection.execute(
             'UPDATE reviews SET stars = ? ,title = ? ,content = ?, img = ?, edited_at = ?, review_status_id = 4 WHERE id = ?',
             [stars, title, content, imgPath, editDate, rid]
         );
-        //TODO:讀取資料夾裡檔案數量
-        res.json({ message: 200, imgPath });
-        console.log('succes :>> ', 'succes');
+        //讀取資料夾裡檔案數量
+        const dir = path.join(
+            __dirname,
+            '../public/uploads/reviews',
+            `r-${rid}`
+        );
+        //readdir (promise)
+        const files = await fs.readdir(dir);
+        res.json({ message: 200, imgPath, imgName: files });
     } catch (err) {
         console.log('err :>> ', err);
     }
