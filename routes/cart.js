@@ -64,8 +64,7 @@ router.get('/', async function (req, res, next) {
 // API_POST_CART
 router.post('/', function (req, res, next) {
     const userId = req.body.userId;
-    const add = req.body.add;
-    const remove = req.body.remove;
+    const diff = req.body.diff;
     const sessionId = req.session.user.id; // FIXME: 由 auth 模組決定如何存儲
 
     if (userId != sessionId) {
@@ -78,22 +77,18 @@ router.post('/', function (req, res, next) {
     // 容器
     const payload = { statusCode: 2, result: true };
     // 資料庫更新
-    // try {
-    //     const [cart] = await connection.execute('SELECT product_id FROM cart WHERE user_id = ?', [userId]);
-    //     const insert = cart.filter(function (e) {
-    //         for (let i = 0 ; i < add.length ; i++) {
-    //             if (e === add[i])
-    //         }
-    //     })
-    //     cart.forEach(function (item) {
-    //         add.forEach(function (addItem) {
-    //             if (addItem === item)
-    //         })
-    //         if (item.product_id )
-    //     })
-    //     // 新增
-    //     // 刪除
-    // }
+    try {
+        const sql = "UPDATE cart "
+
+        const add = diff.filter(e => e > 0);
+        const remove = diff.filter(e => e < 0).map(e => -1 * e);
+
+        // 新增
+        await connection.execute('INSERT INTO cart (created_at, product_id, user_id, valid) VALUES (?, ?, ?, ?), VALUES (?, ?, ?, ?) ')
+        // 刪除
+        await connection.execute('DELETE cart WHERE product_id IN ()')
+
+    }
     // 資料庫購物車新增
     // try {
     //     add.forEach(function () {
