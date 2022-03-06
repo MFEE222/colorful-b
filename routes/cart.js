@@ -7,17 +7,18 @@ const moment = require('moment');
 // FIXME: 測試用中間件（用來設定 req.session.user.id）
 router.use('/', function (req, res, next) {
     console.log(2);
-    req.session.user.id = 3;
+    req.session.user = {
+        id: 3,
+    };
     next();
 });
 
 // API_GET_CART
 router.get('/', async function (req, res, next) {
-    console.log('here');
     const userId = req.query.userId;
     const sessionId = req.session.user.id; // FIXME: 和 auth 中間件討論登入狀態如何儲存
-    console.log('userId :>> ', userId);
-    console.log('sessionId :>> ', sessionId);
+    // console.log('userId :>> ', userId);
+    // console.log('sessionId :>> ', sessionId);
     // 請求者，登入者不同人
     if (userId != sessionId) {
         res.json({
@@ -31,7 +32,9 @@ router.get('/', async function (req, res, next) {
     const payload = { statusCode: 2 };
     // 資料庫請求購物車
     try {
-        const { orderby, order, limit, offset } = req.query.option;
+        const { orderby, order, limit, offset } = req.query.option
+            ? req.query.option
+            : {};
         const values = [];
 
         const sql = 'SELECT product_id FROM cart WHERE user_id = ?';
@@ -53,7 +56,7 @@ router.get('/', async function (req, res, next) {
         }
 
         const [data] = await connection.execute(sql, values);
-        // console.log('data :>> ', data);
+        // console.log('cart :>> ', data);
         payload.cart = data;
     } catch (err) {
         console.log('err :>> ', err);
@@ -63,13 +66,14 @@ router.get('/', async function (req, res, next) {
     try {
         const sql = 'SELECT COUNT(id) AS TOTAL FROM cart WHERE user_id = ?';
         const [data] = await connection.execute(sql, [userId]);
-        console.log('data :>> ', data); // FIXME: 不確定返回結果，待測試
-        payload.total = data.total;
+        // console.log('total :>> ', data[0].TOTAL); // FIXME: 不確定返回結果，待測試
+        payload.total = data[0].TOTAL;
     } catch (err) {
         console.log('err :>> ', err);
         payload.statusCode = 1;
     }
     // 返回
+    // console.log('payload :>> ', payload);
     res.json(payload);
 });
 
