@@ -18,6 +18,7 @@ const authRouter = require('./routes/auth');
 const homeRouter = require('./routes/home');
 const memberRouter = require('./routes/member');
 const cartRouter = require('./routes/cart');
+const downloadRouter = require('./routes/download');
 
 // 建立 app 實例
 const app = express();
@@ -49,6 +50,7 @@ app.use('/api/cart', cartRouter);
 app.use('/api/home', homeRouter);
 app.use('/api/member', memberRouter);
 app.use('/api/products', productRouter);
+app.use('/api/download', downloadRouter);
 // 測試用
 app.use('/multer', function (req, res) {
     res.sendFile(path.join(__dirname, 'public/tmp/multer.html'));
