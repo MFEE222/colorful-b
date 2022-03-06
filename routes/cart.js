@@ -8,7 +8,7 @@ const moment = require('moment');
 router.use('/', function (req, res, next) {
     console.log(2);
     req.session.user = {
-        id: 3,
+        id: 20,
     };
     next();
 });
@@ -16,7 +16,7 @@ router.use('/', function (req, res, next) {
 // API_GET_CART
 router.get('/', async function (req, res, next) {
     const userId = req.query.userId;
-    const sessionId = req.session.user.id; // FIXME: 和 auth 中間件討論登入狀態如何儲存
+    const sessionId = req.session.user.id ? req.session.user.id : -1; // FIXME: 和 auth 中間件討論登入狀態如何儲存
     // console.log('userId :>> ', userId);
     // console.log('sessionId :>> ', sessionId);
     // 請求者，登入者不同人
@@ -32,19 +32,23 @@ router.get('/', async function (req, res, next) {
     const payload = { statusCode: 2 };
     // 資料庫請求購物車
     try {
-        const { orderby, order, limit, offset } = req.query.option
-            ? req.query.option
-            : {};
+        const { orderby, order, limit, offset } = req.query ? req.query : {};
+        // console.log('req.query :>> ', req.query);
+        // console.log('orderby :>> ', orderby);
+        // console.log('order :>> ', order);
+        // console.log('limit :>> ', limit);
+        // console.log('offset :>> ', offset);
         const values = [];
 
-        const sql = 'SELECT product_id FROM cart WHERE user_id = ?';
+        let sql = 'SELECT product_id FROM cart WHERE user_id = ?';
         values.push(userId);
         if (orderby) {
             sql = sql.concat(' ORDER BY ?');
             values.push(orderby);
         }
         if (order) {
-            sql = sql.concat(' ORDER DESC');
+            // FIXME: 待修復
+            // sql = order == 1 ? sql.concat(' ORDER DESC') : sql;
         }
         if (limit) {
             sql = sql.concat(' LIMIT ?');
@@ -54,7 +58,8 @@ router.get('/', async function (req, res, next) {
             sql = sql.concat(' OFFSET ?');
             values.push(offset);
         }
-
+        // console.log('sql :>> ', sql);
+        // console.log('values :>> ', values);
         const [data] = await connection.execute(sql, values);
         // console.log('cart :>> ', data);
         payload.cart = data;
