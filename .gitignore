@@ -4,6 +4,7 @@ tmp.*
 dist
 .DS_Store
 
+/sessions
 /public/images/
 /public/uploads/
 /dng

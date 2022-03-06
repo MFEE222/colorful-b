@@ -11,7 +11,7 @@ require('dotenv').config();
 
 module.exports = session({
     store: new FileStore({
-        path: path.join(__dirname, 'sessions'),
+        path: path.join(__dirname, '../sessions'),
     }),
 
     secret: process.env.SESSION_SECRET,
