@@ -1,6 +1,14 @@
 const express = require('express');
 const router = express.Router();
 const connection = require('../utils/db');
+// third-part
+const moment = require('moment');
+
+// FIXME: 測試用中間件（用來設定 req.session.user.id）
+router.use('/', function (req, res, next) {
+    req.session.user.id = 3;
+    next();
+});
 
 // API_GET_CART
 router.get('/', async function (req, res, next) {
@@ -62,7 +70,7 @@ router.get('/', async function (req, res, next) {
 });
 
 // API_POST_CART
-router.post('/', function (req, res, next) {
+router.post('/', async function (req, res, next) {
     const userId = req.body.userId;
     const diff = req.body.diff;
     const sessionId = req.session.user.id; // FIXME: 由 auth 模組決定如何存儲
@@ -72,29 +80,57 @@ router.post('/', function (req, res, next) {
             statusCode: 1,
             result: false,
         });
+        return;
     }
 
     // 容器
     const payload = { statusCode: 2, result: true };
-    // 資料庫更新
+    // 資料庫新增資料
     try {
-        const sql = "UPDATE cart "
+        let sql = 'INSERT INTO cart (created_at, product_id, user_id, valid)';
+        let values = [];
 
-        const add = diff.filter(e => e > 0);
-        const remove = diff.filter(e => e < 0).map(e => -1 * e);
-
-        // 新增
-        await connection.execute('INSERT INTO cart (created_at, product_id, user_id, valid) VALUES (?, ?, ?, ?), VALUES (?, ?, ?, ?) ')
-        // 刪除
-        await connection.execute('DELETE cart WHERE product_id IN ()')
-
+        const add = diff.filter((e) => e > 0);
+        add.forEach(function (e, i) {
+            sql += i === 0 ? ' VALUES (?, ?, ?, ?)' : ', VALUES (?, ?, ?, ?)';
+            const date = moment().format('YYYY-MM-DD');
+            const pid = e;
+            const uid = userId;
+            const valid = 1;
+            values = values.concat([date, pid, uid, valid]);
+        });
+        // FIXME: 待測試 資料庫語法組合結果
+        // console.log('sql :>> ', sql);
+        // console.log('values :>> ', values);
+        await connection.execute(sql, values);
+    } catch (err) {
+        console.log('err :>> ', err);
+        payload.statusCode = 1;
+        payload.result = false;
     }
-    // 資料庫購物車新增
-    // try {
-    //     add.forEach(function () {
+    // 資料庫刪除資料
+    try {
+        let sql = 'DELETE cart WHERE product_id IN';
+        let values = [];
 
-    //     })
-    // } catch (err) {}
+        const remove = diff.filter((e) => e < 0);
+        sql += ' (' + new Array(remove.length).fill('?').join(',') + ') ';
+        values = values.concat(
+            remove.map((e) => {
+                -1 * e;
+            })
+        );
+        // FIXME: 待測試 資料庫語法組合結果
+        // console.log('sql :>> ', sql);
+        // console.log('values :>> ', values);
+        await connection.execute(sql, values);
+    } catch (err) {
+        console.log('err :>> ', err);
+        payload.statusCode = 1;
+        payload.result = false;
+    }
+
+    res.json(payload);
 });
 
 module.exports = router;
