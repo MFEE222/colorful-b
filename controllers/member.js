@@ -132,25 +132,26 @@ const getDownload = async (req, res, next) => {
 };
 
 //壓縮Dng
-const getDng = async (req, rea, next) => {
-    const { uid, dngId } = req.body; //會員id
-    console.log('uid :>> ', uid);
-    console.log('dngid :>> ', dngId);
-    const values = [];
-    values.push(uid);
-    dngId.forEach((e) => values.push(e));
-    //壓縮
-    //更新資料庫
-    let sql = 'UPDATE download SET status=2 WHERE user_id = ? AND product_id';
-    if (!Array.isArray(dngId)) dngId = JSON.parse(dngId);
-    sql += ` IN (${dngId.reduce((a, c, i) => (i !== 0 ? a + ', ?' : a), '?')})`;
-    console.log('sql :>> ', sql);
-    try {
-        const [data, fields] = await connection.execute(sql, values);
-    } catch (err) {
-        console.log('err :>> ', err);
-    }
-};
+// const getDng = async (req, rea, next) => {
+//     const { uid, dngId } = req.body; //會員id
+//     console.log('uid :>> ', uid);
+//     console.log('dngid :>> ', dngId);
+//     const values = [];
+//     values.push(uid);
+//     dngId.forEach((e) => values.push(e));
+//     //壓縮
+
+//     //更新資料庫
+//     let sql = 'UPDATE download SET status=2 WHERE user_id = ? AND product_id';
+//     if (!Array.isArray(dngId)) dngId = JSON.parse(dngId);
+//     sql += ` IN (${dngId.reduce((a, c, i) => (i !== 0 ? a + ', ?' : a), '?')})`;
+//     console.log('sql :>> ', sql);
+//     try {
+//         const [data, fields] = await connection.execute(sql, values);
+//     } catch (err) {
+//         console.log('err :>> ', err);
+//     }
+// };
 
 const getUpdateDetail = async (req, res, next) => {
     console.log('req.body :>> ', req.body);
@@ -189,7 +190,7 @@ const getUpdateDetail = async (req, res, next) => {
 module.exports = {
     getReview,
     getDownload,
-    getDng,
+    // getDng,
     getImg,
     getUpdateDetail,
 };
