@@ -1,9 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const connection = require('../utils/db');
-const bcrypt = require("bcrypt");
-const argon2 = require('argon2');
-const mysql = require('mysql2');
+const bcrypt = require('bcrypt');
 
 // get, post, delete, put
 const routes = {
@@ -15,30 +13,24 @@ const routes = {
     auth: '/',
 };
 
-const {
-    body,
-    validationResult
-} = require("express-validator");
-const {
-    colors
-} = require('debug/src/node');
+const { body, validationResult } = require('express-validator');
 const registerRules = [
     // 檢查 email 是否符合格式
-    body("email").isEmail().withMessage("Email 欄位請填寫正確格式"),
-    body("password").isLength({
-        min: 8
-    }).withMessage("密碼長度至少為 8"),
-    body("confirmPassword")
-    .custom((value, {
-        req
-    }) => {
-        return value === req.body.password;
-    })
-    .withMessage("密碼驗證不一致"),
+    body('email').isEmail().withMessage('Email 欄位請填寫正確格式'),
+    body('password')
+        .isLength({
+            min: 8,
+        })
+        .withMessage('密碼長度至少為 8'),
+    body('confirmPassword')
+        .custom((value, { req }) => {
+            return value === req.body.password;
+        })
+        .withMessage('密碼驗證不一致'),
 ];
 
+// 註冊
 router.post(routes.register, registerRules, async (req, res, next) => {
-    console.log(123);
     // 驗證前端傳送過來的資料有效性（express-validator）
     //驗證結果
     const validateResult = validationResult(req);
@@ -48,23 +40,23 @@ router.post(routes.register, registerRules, async (req, res, next) => {
         let error = validateResult.array();
         // console.log("validateResult", error);
         return res.status(400).json({
-            code: "4001",
-            msg: "帳號或密碼錯誤",
+            code: '4001',
+            msg: '帳號或密碼錯誤',
         });
     }
 
     // 寫入資料庫（檢查帳號是否已存在、雜湊密碼）
     // 檢查email 是否已註冊
     let [users] = await connection.execute(
-        "SELECT * FROM users WHERE email=?",
+        'SELECT * FROM users WHERE email=?',
         [req.body.email]
     );
 
     // console.log('users :>> ', users);
     if (users.length > 0) {
         return res.status(400).send({
-            code: "4001",
-            msg: "帳號或密碼錯誤",
+            code: '4001',
+            msg: '帳號或密碼錯誤',
         });
     }
     // 雜湊 password
@@ -74,36 +66,33 @@ router.post(routes.register, registerRules, async (req, res, next) => {
 
     //存資料庫
     let [result] = await connection.execute(
-        "INSERT INTO users (email, password, password_hint, name) VALUES (?, ?, ?, ?)",
+        'INSERT INTO users (email, password, password_hint, name) VALUES (?, ?, ?, ?)',
         [req.body.email, hashPassword, hashPasswordHint, req.body.name]
     );
     console.log('result :>> ', result);
 
     res.json({
-        code: "4004",
-        msg: "註冊成功",
+        code: '4004',
+        msg: '註冊成功',
     });
-
 });
 
-
+// 登入
 router.post(routes.login, async (req, res, next) => {
-    // TODO: 限制 N 時間內嘗試 N 次
-
     // console.log('req.body :>> ', req.body);
     const email = req.body.account;
     const password = req.body.password;
 
     let [users] = await connection.execute(
-        "SELECT * FROM users WHERE email=?",
+        'SELECT * FROM users WHERE email=?',
         [email]
     );
     // console.log('users :>> ', users);
 
     if (users.length === 0) {
         res.status(400).send({
-            code: "33003",
-            msg: "尚未註冊",
+            code: '33003',
+            msg: '尚未註冊',
         });
         return;
     }
@@ -114,8 +103,8 @@ router.post(routes.login, async (req, res, next) => {
     // console.log('result :>> ', result);
     if (!result) {
         res.status(400).send({
-            code: "4001",
-            msg: "帳號或密碼錯誤",
+            code: '4001',
+            msg: '帳號或密碼錯誤',
         });
         return;
     }
@@ -128,7 +117,7 @@ router.post(routes.login, async (req, res, next) => {
         phone: user.phone,
         gender: user.gender,
         birthday: user.birthday,
-    }
+    };
 
     // 成功登入
     req.session.user = returnMember;
@@ -137,21 +126,21 @@ router.post(routes.login, async (req, res, next) => {
     if (req.session.isLogin) {
         res.json({
             user: returnMember,
-            code: "4002",
-            msg: "登入成功",
+            code: '4002',
+            msg: '登入成功',
         });
         return;
     }
 });
 
-
-
 router.get(routes.logout, (req, res, next) => {
     // 刪除登入狀態 Session
-    req.session.user = null;
+    req.session.user = {};
+    req.session.isLogin = false;
     res.sendStatus(202);
 });
 
+// 忘記密碼
 router.post(routes.forgot, async (req, res, next) => {
     // 驗證前端傳送過來的資料
     req.session.allowResetPassword = false;
@@ -159,50 +148,48 @@ router.post(routes.forgot, async (req, res, next) => {
     const email = req.body.email;
     const passwordHint = req.body.passwordHint;
 
-
     let [users] = await connection.execute(
-        "SELECT * FROM users WHERE email=?",
+        'SELECT * FROM users WHERE email=?',
         [email]
     );
     // 檢查有無註冊
     if (users.length === 0) {
         res.status(400).send({
-            code: "4009",
-            msg: "無效帳號或密碼提示關鍵字",
+            code: '4009',
+            msg: '無效帳號或密碼提示關鍵字',
         });
         return;
     }
 
     //把會員資料拿出來
     let user = users[0];
-    console.log('users :>> ', users);
-
+    // console.log('users :>> ', users);
 
     // 檢查密碼提示是否正確
     // 解雜湊
     const result = await bcrypt.compare(passwordHint, user.password_hint);
     if (!result) {
         res.status(400).send({
-            code: "4009",
-            msg: "無效帳號或密碼提示關鍵字",
+            code: '4009',
+            msg: '無效帳號或密碼提示關鍵字',
         });
         return;
     }
 
-
     //導向重設密碼頁
     req.session.allowResetPassword = true;
     req.session.allowResetEmail = email;
-    console.log('req.session.allowResetEmail :>> ', req.session.allowResetEmail);
+    // console.log(
+    //     'req.session.allowResetEmail :>> ',
+    //     req.session.allowResetEmail
+    // );
     res.json({
-        allowResetPassword: true
-    })
-
+        allowResetPassword: true,
+    });
 });
 
+// 重設密碼
 router.post(routes.reset, async (req, res, next) => {
-    // TODO: 驗證前端傳送過來的資料有效性
-
     const allowed = req.session.allowResetPassword;
     console.log('allowed :>> ', allowed);
     const email = req.session.allowResetEmail;
@@ -210,11 +197,10 @@ router.post(routes.reset, async (req, res, next) => {
     if (!allowed) {
         // 不允許重設密碼
         res.status(400).send({
-            code: "4009",
-            msg: "無效帳號",
+            code: '4009',
+            msg: '無效帳號',
         });
     }
-   
 
     //允許重設密碼
     const validateResult = validationResult(req);
@@ -224,19 +210,18 @@ router.post(routes.reset, async (req, res, next) => {
         let error = validateResult.array();
         // console.log("validateResult", error);
         return res.status(400).json({
-            code: "4001",
-            msg: "帳號或密碼錯誤",
+            code: '4001',
+            msg: '帳號或密碼錯誤',
         });
     }
 
     // 是否有此email 在資料庫
-    
+
     let [users] = await connection.execute(
-        "SELECT * FROM users WHERE email=?",
+        'SELECT * FROM users WHERE email=?',
         [email]
     );
-    
-    
+
     // 雜湊 password
     // console.log('req.body.password', req.body.password)
     let hashPassword = await bcrypt.hash(req.body.password, 10);
@@ -244,21 +229,15 @@ router.post(routes.reset, async (req, res, next) => {
 
     //存資料庫
     let [result] = await connection.execute(
-        "INSERT INTO users (password, password_hint) VALUES (?, ?)",
+        'INSERT INTO users (password, password_hint) VALUES (?, ?)',
         [hashPassword, hashPasswordHint]
     );
-    console.log('result :>> ', result);
+    // console.log('result :>> ', result);
     // 回應
     res.json({
-        code: "4008",
-        msg: "修改密碼成功",
+        code: '4008',
+        msg: '修改密碼成功',
     });
-
-
-
-
-
-
 
     // ======================================================
     // 前端 ok
@@ -286,11 +265,13 @@ router.post(routes.reset, async (req, res, next) => {
     // 前端
     // 1. 成功修改密碼就導向登入頁 並將允許重設密碼狀態改為 false
     // 2. 密碼格式不符合就顯示提示 限制修改次數???
-
 });
 
+// 驗證登入狀態
 router.post(routes.auth, function (req, res, next) {
     // TODO: 驗證登入狀態
 });
 
 module.exports = router;
+
+// TODO: 登入限制 N 時間內嘗試 N 次
