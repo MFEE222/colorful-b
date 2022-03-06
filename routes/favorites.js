@@ -14,11 +14,7 @@ router.get('/', async (req, res, next) => {
     }
     console.log('userid :>> ', userid);
     let sql = `SELECT
-                    id,
-                    created_at,
-                    product_id,
-                    user_id
-               FROM favorites
+             6y
                WHERE user_id = ?`;
 
     try {
@@ -31,6 +27,10 @@ router.get('/', async (req, res, next) => {
     }
 });
 
-// router.get('/test', wishlistController.getProducts);
+// 搜尋
+
+// 新增
+
+// 刪除
 
 module.exports = router;
