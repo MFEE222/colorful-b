@@ -32,6 +32,7 @@ router.get('/', async function (req, res, next) {
         const values = [];
 
         const sql = 'SELECT product_id FROM cart WHERE user_id = ?';
+        values.push(userId);
         if (orderby) {
             sql = sql.concat(' ORDER BY ?');
             values.push(orderby);
@@ -48,8 +49,8 @@ router.get('/', async function (req, res, next) {
             values.push(offset);
         }
 
-        const [data] = await connection.execute(sql, [userId]);
-        console.log('data :>> ', data);
+        const [data] = await connection.execute(sql, values);
+        // console.log('data :>> ', data);
         payload.cart = data;
     } catch (err) {
         console.log('err :>> ', err);
