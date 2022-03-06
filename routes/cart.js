@@ -6,15 +6,18 @@ const moment = require('moment');
 
 // FIXME: 測試用中間件（用來設定 req.session.user.id）
 router.use('/', function (req, res, next) {
+    console.log(2);
     req.session.user.id = 3;
     next();
 });
 
 // API_GET_CART
 router.get('/', async function (req, res, next) {
+    console.log('here');
     const userId = req.query.userId;
     const sessionId = req.session.user.id; // FIXME: 和 auth 中間件討論登入狀態如何儲存
-
+    console.log('userId :>> ', userId);
+    console.log('sessionId :>> ', sessionId);
     // 請求者，登入者不同人
     if (userId != sessionId) {
         res.json({
