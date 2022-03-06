@@ -14,13 +14,18 @@ router.use('/', function (req, res, next) {
     next();
 });
 
+router.get('/test', function (req, res, next) {
+    res.sendFile(path.join(__dirname, 'tmp.html'));
+});
+
 // API_POST_MEMBER_DOWNLOAD_DNG
 router.post('/', function (req, res, next) {
-    const { uid, dngId } = req.body;
-    const userId = uid;
+    // const { userId, dngId } = req.body;
+    const userId = req.body.userId;
+    const dngId = JSON.parse(req.body.dngId);
     const sessionId = req.session.user.id || -1;
-    console.log('uid :>> ', uid);
-    console.log('dngId :>> ', dngId);
+    // console.log('userId :>> ', userId);
+    // console.log('dngId :>> ', dngId);
 
     // 驗證前端傳來資料
     if (userId != sessionId) {
@@ -32,22 +37,29 @@ router.post('/', function (req, res, next) {
     }
 
     // 容器
-    const payload = { statusCode: 2, result: true};
+    // const payload = { statusCode: 2, result: true};
 
     // 生成壓縮檔名，去目標資料夾 /download 尋找 (尋找到寫入資料庫後，直接返回)
     const zipFile = {
         base: zipPath(dngId),   
         where: path.join(__dirname, '../download', zipPath(dngId)),
     }
+    // console.log('zipFile :>> ', zipFile);
+
     if (fs.existsSync(zipFile.where)) {
+        console.log('zip file download direct');
         recordDownloadHistory(userId, dngId);
         res.setHeader('Content-Disposition', `filename="${zipFile.base}"`);
         fs.createReadStream(zipFile.where).pipe(res);
+        return;
     }
+
     // 去目標資料夾 /dng 將符合商品加入打包壓縮流
     const zipStream = new compressing.zip.Stream();
+    // console.log('Array.isArray(dngId) :>> ', Array.isArray(dngId));
     dngId.forEach(e => {
-        const dng = path.join(__dirname, '../dng', e);
+        console.log('here ================================');
+        const dng = path.join(__dirname, '../dng', `${e}`);
         console.log('dng :>> ', dng);
         zipStream.addEntry(dng);
     });
@@ -58,7 +70,10 @@ router.post('/', function (req, res, next) {
        recordDownloadHistory(userId, dngId); 
        res.setHeader('Content-Disposition', `filename="${zipFile.base}"`);
        fs.createReadStream(zipFile.where).pipe(res);
+       return;
     })
+
+    console.log('end');
 });
 
 
@@ -69,7 +84,7 @@ function zipPath(dngId, ext='zip') {
 }
 
 // 將下載紀錄寫進資料庫
-function recordDownloadHistory(userId, dngId) {
+async function recordDownloadHistory(userId, dngId) {
     try {
         let sql = 'UPDATE download SET status = 2 WHERE user_id = ? AND product_id IN';
         let values = [userId];

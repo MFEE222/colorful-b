@@ -190,7 +190,7 @@ const getUpdateDetail = async (req, res, next) => {
 module.exports = {
     getReview,
     getDownload,
-    getDng,
+    // getDng,
     getImg,
     getUpdateDetail,
 };
