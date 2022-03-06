@@ -3,3 +3,4 @@ tmp.*
 .env
 dist
 .DS_Store
+tmp
