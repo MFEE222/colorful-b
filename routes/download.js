@@ -52,7 +52,11 @@ router.post('/', function (req, res, next) {
     if (fs.existsSync(zipFile.where)) {
         console.log('zip file download direct');
         recordDownloadHistory(userId, dngId);
-        res.setHeader('Content-Disposition', `filename="${zipFile.base}"`);
+        res.setHeader(
+            'Content-Disposition',
+            `attachment; filename="${zipFile.base}"`
+        );
+        res.statusMessage = zipFile.base;
         // res.status(200);
         fs.createReadStream(zipFile.where).pipe(res);
         // res.download(zipFile.where);
@@ -75,7 +79,12 @@ router.post('/', function (req, res, next) {
         .on('finish', function () {
             // 將 /download 資料夾中的目標壓縮檔，寫入資料庫後，以寫入流的方式返回前端
             recordDownloadHistory(userId, dngId);
-            res.setHeader('Content-Disposition', `filename="${zipFile.base}"`);
+            res.setHeader(
+                'Content-Disposition',
+                `attachment; filename="${zipFile.base}"`
+            );
+            res.statusMessage = zipFile.base;
+
             // res.status(200);
             fs.createReadStream(zipFile.where).pipe(res);
             // res.download(zipFile.where);
