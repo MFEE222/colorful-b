@@ -4,6 +4,7 @@ const multer = require('multer');
 const connection = require('../utils/db');
 const { resourceUsage } = require('process');
 const fs = require('fs/promises');
+const { enableColor } = require('npmlog');
 
 const getReview = async (req, res, next) => {
     const { uid, statusId, limit, offset } = req.query; //會員id
@@ -63,7 +64,7 @@ const getReview = async (req, res, next) => {
         console.log('err :>> ', err);
     }
 };
-//取得初始照片
+//取得評論初始照片
 const getImg = async (req, res, next) => {
     console.log('req.params :>> ', req.params);
     let rid = req.params.rid;
@@ -132,35 +133,28 @@ const getDownload = async (req, res, next) => {
 };
 
 //壓縮Dng
-// const getDng = async (req, rea, next) => {
-//     const { uid, dngId } = req.body; //會員id
-//     console.log('uid :>> ', uid);
-//     console.log('dngid :>> ', dngId);
-//     const values = [];
-//     values.push(uid);
-//     dngId.forEach((e) => values.push(e));
-//     //壓縮
-
-//     //更新資料庫
-//     let sql = 'UPDATE download SET status=2 WHERE user_id = ? AND product_id';
-//     if (!Array.isArray(dngId)) dngId = JSON.parse(dngId);
-//     sql += ` IN (${dngId.reduce((a, c, i) => (i !== 0 ? a + ', ?' : a), '?')})`;
-//     console.log('sql :>> ', sql);
-//     try {
-//         const [data, fields] = await connection.execute(sql, values);
-//     } catch (err) {
-//         console.log('err :>> ', err);
-//     }
-// };
-
-const getUpdateDetail = async (req, res, next) => {
-    console.log('req.body :>> ', req.body);
+const getDng = async (req, rea, next) => {
+    const { uid, dngId } = req.body; //會員id
+    console.log('uid :>> ', uid);
+    console.log('dngid :>> ', dngId);
+    const values = [];
+    values.push(uid);
+    dngId.forEach((e) => values.push(e));
+    //壓縮
     //更新資料庫
+    let sql = 'UPDATE download SET status=2 WHERE user_id = ? AND product_id';
+    if (!Array.isArray(dngId)) dngId = JSON.parse(dngId);
+    sql += ` IN (${dngId.reduce((a, c, i) => (i !== 0 ? a + ', ?' : a), '?')})`;
+    console.log('sql :>> ', sql);
+    try {
+        const [data, fields] = await connection.execute(sql, values);
+    } catch (err) {
+        console.log('err :>> ', err);
+    }
+};
+//更新評論
+const getUpdateDetail = async (req, res, next) => {
     const { rid, stars, title, content } = req.body;
-    //圖片位置
-    let imgPath = `uploads/reviews/r-${rid}`;
-    console.log('imgPath :>> ', imgPath);
-    //更新edited_at 時間
     let date = new Date();
     const formatDate = (date) => {
         let formatted_date =
@@ -172,26 +166,38 @@ const getUpdateDetail = async (req, res, next) => {
         return formatted_date;
     };
     const editDate = formatDate(date);
-    console.log(editDate);
-
     try {
         //更新 DB
         const [data, fields] = await connection.execute(
             'UPDATE reviews SET stars = ? ,title = ? ,content = ?, img = ?, edited_at = ?, review_status_id = 4 WHERE id = ?',
-            [stars, title, content, imgPath, editDate, rid]
+            [stars, title, content, `uploads/reviews/r-${rid}`, editDate, rid]
         );
-
         res.json({ message: 200 });
     } catch (err) {
         console.log('err :>> ', err);
     }
-    // res.json('ok');
+};
+
+//更新 users
+const getProfile = async (req, res, next) => {
+    const { uid } = req.query;
+    const { name, birthDay, phone, email } = req.body;
+    try {
+        const [data, fields] = await connection.execute(
+            'UPDATE users SET name=?, birthday=?, phone=?, email=? ,figure=? WHERE id=?',
+            [name, birthDay, phone, email, `uploads/profile/u-${uid}`, uid]
+        );
+        res.json({ message: 200 });
+    } catch (err) {
+        console.log('err :>> ', err);
+    }
 };
 module.exports = {
     getReview,
     getDownload,
-    // getDng,
+    getDng,
     getImg,
     getUpdateDetail,
+    getProfile,
 };
 //TODO:讀取檔案r-id檔案 看有多少圖片->回傳->前端圖片寫法更新

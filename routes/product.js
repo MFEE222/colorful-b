@@ -9,7 +9,7 @@ router.get('/recommend', productController.getRecommend);
 router.get('/list', productController.getList);
 
 // 請求評論資料
-router.get('/reviews/:pid', productController.getReviewDetail);
+router.get('/review/:pid', productController.getReviewDetail);
 
 // 請求商品資料
 router.get('/', productController.getData);
