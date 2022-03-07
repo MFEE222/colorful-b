@@ -39,7 +39,7 @@ router.get('/', async function (req, res, next) {
     const { userID, orderStatus, date, sortBy, sortType, limit, offset } =
         req.query;
     // 驗證
-    if (!authUser(userID)) {
+    if (!authUser(userID, req)) {
         res.json({
             statusCode: 1,
             orders: [],
@@ -84,7 +84,7 @@ router.get('/detail', async function (req, res, next) {
     const { userID, orderID, orderNumber, sortBy, sortType, limit, offset } =
         req.query;
     // 驗證
-    if (!authUser(userID)) {
+    if (!authUser(userID, req)) {
         res.json({
             statusCode: 1,
             orderDetail: [],
@@ -93,7 +93,7 @@ router.get('/detail', async function (req, res, next) {
     // 酬載
     const payload = {
         statusCode: 2,
-        orderDetailID: selectOrderDetail(orderID),
+        orderDetailID: selectOrderDetail(orderID, req.query),
     };
     // 返回
     res.json(payload);
@@ -106,6 +106,8 @@ router.get('/detail', async function (req, res, next) {
 //     sessionID,
 //     userID,
 //     productIDs,
+//     purchaserName,
+//     purchaserEmail,
 // }
 // Res
 // {
@@ -116,13 +118,14 @@ router.get('/detail', async function (req, res, next) {
 //     orderStatus, // 7: mount 待確認, 1: pending 待付款, 2: cancel 已取消, 3: paid 已付款, 4: refund 退款中, 5: refunded 已退款, 6: close 已關閉
 // }
 router.post('/', async function (req, res, next) {
+    console.log('req.body :>> ', req.body);
     const userID = req.body.userID;
     const productIDs = !Array.isArray(req.body.productIDs)
         ? JSON.parse(req.body.productIDs)
         : req.body.productIDs;
-    const sessionID = req.session.user.id ? req.session.user.id : -1;
 
-    if (userID != sessionID) {
+    // 驗證
+    if (!authUser(userID, req)) {
         res.json({
             statusCode: 1,
             allowPayment: false,
@@ -141,41 +144,6 @@ router.post('/', async function (req, res, next) {
     // }
     // 酬載
     const payload = { statusCode: 2, allowPayment: true };
-    // 變數
-    let products = [];
-    let user = {};
-    // 獲取 product 商品資料
-    try {
-        let sql = `SELECT * FROM products WHERE id IN`;
-        let values = [];
-        if (productIDs.length > 0) {
-            sql +=
-                ' (' + new Array(productIDs.length).fill('?').join(',') + ')';
-
-            values = values.concat(productIDs);
-
-            const [data] = await connection.execute(sql, values);
-            if (data) products = data;
-        }
-    } catch (err) {
-        console.log('err :>> ', err);
-        payload.statusCode = 1;
-    }
-    // 獲取 user 資料
-    try {
-        let sql = `SELECT * FROM users WHERE id = ?`;
-        values = [userID];
-
-        console.log('sql :>> ', sql);
-
-        const [data] = await connection.execute(sql, values);
-        if (data) {
-            user = data;
-        }
-    } catch (err) {
-        console.log('err :>> ', err);
-        payload.statusCode = 1;
-    }
 
     // 寫入 orders 表一筆資料
     try {
@@ -246,16 +214,28 @@ router.post('/', async function (req, res, next) {
         console.log('sql :>> ', sql);
         console.log('values :>> ', values);
 
-        await connection.execute(sql, values);
+        const [data, field] = await connection.execute(sql, values);
+        console.log('field :>> ', field);
     } catch (err) {
         console.log('err :>> ', err);
     }
 
     // 寫入 order_detail 多筆資料
-    try {
-    } catch (err) {
-        console.log('err :>> ', err);
-    }
+    // product_name
+    // product_price
+    // created_at
+    // order_id
+    // product_id
+
+    productIDs.forEach(function (e) {
+        insertOrderDetail(
+            e.productName,
+            e.productPrice,
+            moment().format('YYYY-MM-DD'),
+            3,
+            e.id
+        );
+    });
 
     res.json(payload);
 });
@@ -283,13 +263,16 @@ function descriptionPayment(paymentID) {
 }
 
 // 驗證身分
-function authUser(userID) {
+function authUser(userID, eq) {
     if (!req.session.user.id) return false;
     return userID == req.session.user.id;
 }
 
 // 取得資料庫訂單資料
-function selectOrderByUser(userID, { orderStatus, sortBy, limit, offset }) {
+async function selectOrderByUser(
+    userID,
+    { orderStatus, sortBy, limit, offset }
+) {
     try {
         let sql = `SELECT  
                     id,
@@ -339,13 +322,12 @@ function selectOrderByUser(userID, { orderStatus, sortBy, limit, offset }) {
         return data;
     } catch (err) {
         console.log('err :>> ', err);
+        return null;
     }
-
-    return null;
 }
 
 // 使用訂單號碼選擇訂單
-function selectOrder(orderID) {
+async function selectOrder(orderID) {
     try {
         let sql = `SELECT  
                     id,
@@ -374,13 +356,12 @@ function selectOrder(orderID) {
         return data;
     } catch (err) {
         console.log('err :>> ', err);
+        return null;
     }
-
-    return null;
 }
 
 // 使用訂單號碼選擇訂單細節資料
-function selectOrderDetail(orderID, { sortBy, limit, offset }) {
+async function selectOrderDetail(orderID, { sortBy, limit, offset }) {
     try {
         let sql = `SELECT
                         id,
@@ -417,9 +398,62 @@ function selectOrderDetail(orderID, { sortBy, limit, offset }) {
         return data;
     } catch (err) {
         console.log('err :>> ', err);
+        return null;
     }
+}
 
-    return null;
+// 選擇商品資料
+async function selectProducts(productIDs) {
+    try {
+        let sql = `SELECT
+                        id, 
+                        name,
+                        img,
+                        price,
+                        currency,
+                        product_status_id AS productStatusID,
+                        product_series_id AS productSeriesID
+                    FROM products
+                    WHERE id IN`;
+        let values = [];
+        if (productIDs.length <= 0) {
+            new Error('argument productIDs is empty...');
+        }
+        sql += ' (' + new Array(productIDs.length).fill('?').join(',') + ')';
+        values = values.concat(productIDs);
+
+        const [data] = await connection.execute(sql, values);
+        if (data.length < 0) {
+            new Error('select product failed... productIDs :>>', productIDs);
+        }
+        return data;
+    } catch (err) {
+        console.log('err :>> ', err);
+        return null;
+    }
+}
+
+async function insertOrderDetail(
+    productName,
+    productPrice,
+    createdAt,
+    orderID,
+    productID
+) {
+    try {
+        let sql = `INSERT INTO order_detail
+                        (product_name,
+                        product_price,
+                        created_at,
+                        order_id,
+                        product_id)
+                    VALUES (?, ?, ?, ?, ?)`;
+        let values = [productName, productPrice, createdAt, orderID, productID];
+
+        await connection.execute(sql.values);
+    } catch (err) {
+        console.log('err :>> ', err);
+    }
 }
 
 module.exports = router;
