@@ -38,77 +38,20 @@ router.get('/', async function (req, res, next) {
     console.log('req.query :>> ', req.query);
     const { userID, orderStatus, date, sortBy, sortType, limit, offset } =
         req.query;
-    const sessionID = req.session.user.id ? req.session.user.id : -1;
-
-    if (userID != sessionID) {
+    // 驗證
+    if (!authUser(userID)) {
         res.json({
             statusCode: 1,
             orders: [],
         });
     }
 
-    // 容器
-    // orders: [
-    //     {
-    //         id,
-    //         number,
-    //         product_name,
-    //         product_img,
-    //         products_total,
-    //         price_origin,
-    //         price_discount,
-    //         price_total,
-    //         payment_method,
-    //         user_name,
-    //         user_email,
-    //         created_at,
-    //         order_status_id,
-    //         product_id,
-    //         user_id,
-    //     },
-    // ];
-    const payload = { statusCode: 2, orders: [] };
+    // 酬載
+    const payload = {
+        statusCode: 2,
+        orders: selectOrderByUser(userID, req.query),
+    };
 
-    // 資料庫請求
-    try {
-        let sql = 'SELECT * FROM orders WHERE user_id = ?';
-        let values = [userID];
-
-        if (orderStatus) {
-            sql = sql.concat(' AND order_status_id = ?');
-            values.push(orderStatus);
-        }
-        // if (date) {
-
-        // }
-        if (sortBy) {
-            sql = sql.concat(' ORDER BY ?');
-            values.push(sortBy);
-        }
-        // if (sortType) {
-
-        // }
-        if (limit) {
-            sql = sql.concat(' LIMIT ?');
-            values.push(limit);
-        }
-        if (offset) {
-            sql = sql.concat(' OFFSET ?');
-            values.push(offset);
-        }
-
-        // console.log('sql :>> ', sql);
-        // console.log('values :>> ', values);
-
-        const [data] = await connection.execute(sql, values);
-        // console.log('data :>> ', data);
-        if (data) {
-            payload.orders = data;
-        }
-    } catch (err) {
-        console.log('err :>> ', err);
-        payload.statusCode = 1;
-    }
     // 返回
     res.json(payload);
 });
@@ -140,64 +83,19 @@ router.get('/detail', async function (req, res, next) {
     console.log('req.query :>> ', req.query);
     const { userID, orderID, orderNumber, sortBy, sortType, limit, offset } =
         req.query;
-    const sessionID = req.session.user.id ? req.session.user.id : -1;
-
-    if (userID != sessionID) {
+    // 驗證
+    if (!authUser(userID)) {
         res.json({
             statusCode: 1,
             orderDetail: [],
         });
     }
-
     // 酬載
-    // orderDetail: [
-    //     {
-    //         id,
-    //         product_name,
-    //         product_price,
-    //         created_at,
-    //         order_id,
-    //         product_id,
-    //     }
-    // ]
-    const payload = { statusCode: 2, orderDetailID: [] };
-
-    try {
-        let sql = 'SELECT * FROM order_detail WHERE order_id = ?';
-        let values = [orderID];
-
-        if (sortBy) {
-            sql = sql.concat(' ORDER BY ?');
-            values.push(sortBy);
-        }
-
-        // if (sortType) {
-
-        // }
-
-        if (limit) {
-            sql = sql.concat(' LIMIT ?');
-            values.push(limit);
-        }
-
-        if (offset) {
-            sql = sql.concat(' OFFSET ?');
-            values.push(offset);
-        }
-
-        console.log('sql :>> ', sql);
-        console.log('values :>> ', values);
-
-        const [data] = connection.execute(sql, values);
-
-        if (data) {
-            payload.orderDetail = data;
-        }
-    } catch (err) {
-        console.log('err :>> ', err);
-        payload.statusCode = 1;
-    }
-
+    const payload = {
+        statusCode: 2,
+        orderDetailID: selectOrderDetail(orderID),
+    };
+    // 返回
     res.json(payload);
 });
 
@@ -436,6 +334,84 @@ function selectOrderByUser(userID, { orderStatus, sortBy, limit, offset }) {
         console.log('data :>> ', data);
         if (data.length < 0) {
             new Error('select order failed... userID :>>', userID);
+        }
+
+        return data;
+    } catch (err) {
+        console.log('err :>> ', err);
+    }
+
+    return null;
+}
+
+// 使用訂單號碼選擇訂單
+function selectOrder(orderID) {
+    try {
+        let sql = `SELECT  
+                    id,
+                    number,
+                    productName,
+                    productImg,
+                    productsTotal,
+                    priceOrigin,
+                    priceDiscount,
+                    priceTotal,
+                    paymentMethod,
+                    userName,
+                    userEmail,
+                    createdAt,
+                    orderStatusID,
+                    productID,
+                    userID 
+                FROM orders WHERE id = ?`;
+        let values = [orderID];
+
+        const [data] = await connection.execute(sql, values);
+        if (data.length < 0) {
+            new Error('select order failed... userID :>>', userID);
+        }
+
+        return data;
+    } catch (err) {
+        console.log('err :>> ', err);
+    }
+
+    return null;
+}
+
+// 使用訂單號碼選擇訂單細節資料
+function selectOrderDetail(orderID, { sortBy, limit, offset }) {
+    try {
+        let sql = `SELECT
+                        id,
+                        product_name AS productName,
+                        product_price AS productPrice,
+                        created_at AS createdAt,
+                        order_id AS orderID,
+                        product_id AS productID
+                    FROM order_detail
+                    WHERE order_id = ?`;
+        let values = [orderID];
+
+        if (sortBy) {
+            sql = sql.concat(' ORDER BY ?');
+            values.push(sortBy);
+        }
+        if (limit) {
+            sql = sql.concat(' LIMIT ?');
+            values.push(limit);
+        }
+        if (offset) {
+            sql = sql.concat(' OFFSET ?');
+            values.push(offset);
+        }
+
+        console.log('sql :>> ', sql);
+        console.log('values :>> ', values);
+        const [data] = await connection.execute(sql, values);
+
+        if (data.length < 0) {
+            new Error('select order detail failed... orderID :>>', orderID);
         }
 
         return data;
