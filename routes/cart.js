@@ -26,7 +26,6 @@ router.get('/', async function (req, res, next) {
         });
         return;
     }
-
     // 容器
     const payload = { statusCode: 2 };
     // 資料庫請求購物車
@@ -39,7 +38,7 @@ router.get('/', async function (req, res, next) {
         // console.log('offset :>> ', offset);
         const values = [];
 
-        let sql = 'SELECT product_id FROM cart WHERE user_id = ?';
+        let sql = `SELECT products.* FROM cart JOIN products ON cart.product_id = products.id WHERE user_id = ?`;
         values.push(userId);
         if (orderby) {
             sql = sql.concat(' ORDER BY ?');
@@ -57,10 +56,10 @@ router.get('/', async function (req, res, next) {
             sql = sql.concat(' OFFSET ?');
             values.push(offset);
         }
-        // console.log('sql :>> ', sql);
-        // console.log('values :>> ', values);
+        console.log('sql :>> ', sql);
+        console.log('values :>> ', values);
         const [data] = await connection.execute(sql, values);
-        // console.log('cart :>> ', data);
+        console.log('data :>> ', data);
         payload.cart = data;
     } catch (err) {
         console.log('err :>> ', err);
@@ -84,8 +83,13 @@ router.get('/', async function (req, res, next) {
 // API_POST_CART
 router.post('/', async function (req, res, next) {
     // console.log('req.body :>> ', req.body);
+
     const userId = req.body.userId;
     const diff = JSON.parse(req.body.diff);
+    // const diff = Array.isArray(req.body.diff)
+    //     ? JSON.parse(req.body.diff)
+    //     : req.body.diff;
+    console.log('diff :>> ', diff);
     const sessionId = req.session.user.id ? req.session.user.id : -1; // FIXME: 和 auth 中間件討論登入狀態如何儲存
     // console.log('userId :>> ', userId);
     // console.log('diff :>> ', diff);

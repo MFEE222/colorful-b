@@ -266,7 +266,7 @@ const getReviewDetail = async (req, res, next) => {
 // };
 
 const getData = async function (req, res, next) {
-    console.log('req.query:>> ', req.query);
+    // console.log('req.query:>> ', req.query);
     // 取得 query
     const {
         ids,
