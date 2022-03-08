@@ -191,6 +191,12 @@ router.post('/', async function (req, res, next) {
 // API_POST_ORDER_PAYMENT
 router.post('/payment', function (req, res, next) {
     // 核對身份
+    if (!authUser(req.userID)) {
+        res.json({
+            statusCode: 1,
+            resultPayment: false,
+        });
+    }
     // 驗證付款資訊
     // 發卡銀行驗證
     // 付款成功
