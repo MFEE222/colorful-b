@@ -9,7 +9,7 @@ const compressing = require('compressing');
 // FIXME: 測試用中間件（用來設定 req.session.user.id）
 router.use('/', function (req, res, next) {
     req.session.user = {
-        id: 1,
+        id: 3,
     };
     next();
 });

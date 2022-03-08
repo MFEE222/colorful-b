@@ -85,11 +85,17 @@ router.post('/', async function (req, res, next) {
     // console.log('req.body :>> ', req.body);
 
     const userId = req.body.userId;
-    const diff = JSON.parse(req.body.diff);
-    // const diff = Array.isArray(req.body.diff)
-    //     ? JSON.parse(req.body.diff)
-    //     : req.body.diff;
-    console.log('diff :>> ', diff);
+    const diff = req.body.diff;
+    // console.log('diff :>> ', diff);
+    // console.log('typeof diff :>> ', typeof diff);
+    // console.log('Array.isArray(diff) :>> ', Array.isArray(diff));
+    if (!Array.isArray(diff)) {
+        res.json({
+            statusCode: 1,
+            result: false,
+        });
+        return;
+    }
     const sessionId = req.session.user.id ? req.session.user.id : -1; // FIXME: 和 auth 中間件討論登入狀態如何儲存
     // console.log('userId :>> ', userId);
     // console.log('diff :>> ', diff);
