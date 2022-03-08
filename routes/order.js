@@ -105,7 +105,7 @@ router.post('/', async function (req, res, next) {
     data.firstProductID = data.products[0].id;
     // 寫入訂單資料庫
     data.orderID = await insertOrder(data);
-    console.log('data :>> ', data);
+    // console.log('data :>> ', data);
 
     // 寫入訂單細節資料庫
     await insertOrderDetail(data);
@@ -115,10 +115,52 @@ router.post('/', async function (req, res, next) {
 
 // API_POST_ORDER_PAYMENT
 router.post('/payment', function (req, res, next) {
+    const { userID, orderID, creditCard, csv, expiredDate } = req.body;
     // 驗證付款資訊
+    if (!creditCard || !csv || !expiredDate) {
+        res.json({
+            statusCode: 1,
+            resultPayment: false,
+        });
+    }
     // 發卡銀行驗證
     // 付款成功
+
+    // 變數
+    const data = {
+        creditCard,
+        csv,
+        expiredDate,
+        order: '',
+        orderDetail: '',
+        products: '',
+        user: '',
+    };
+
+    // 取得使用者資料
+    data.user = (await selectUser(userID))[0];
+
+    // 取得訂單資料
+    data.order = (await selectOrderByUser(orderID, userID))[0];
+
+    // 取得訂單細節資料 []
+    data.orderDetail = await selectOrderDetail(orderID);
+
+    // 取得商品資料
+    const p = data.orderDetail.map((e) => e.productID);
+    data.products = await selectProducts(p);
+
     // 資料庫（orders, download, reviews）
+    await updateOrderStatus(3, orderID);
+
+    await insertDownload(data);
+
+    await insertReviews(data);
+
+    res.json({
+        statusCode: 2,
+        resultPayment: true,
+    });
 });
 
 // 函數 Function
@@ -232,10 +274,10 @@ async function selectOrderByUser(orderID, userID) {
                 FROM orders WHERE id = ? AND user_id = ?`;
         let values = [orderID, userID];
 
-        console.log('sql :>> ', sql);
-        console.log('values :>> ', values);
+        // console.log('sql :>> ', sql);
+        // console.log('values :>> ', values);
         const [data] = await connection.execute(sql, values);
-        console.log('data :>> ', data);
+        // console.log('data :>> ', data);
         if (data.length < 0) {
             new Error('select order failed... userID :>>', userID);
         }
@@ -276,10 +318,10 @@ async function selectOrderDetail(orderID, { sortBy, limit, offset }) {
             values.push(offset);
         }
 
-        console.log('sql :>> ', sql);
-        console.log('values :>> ', values);
+        // console.log('sql :>> ', sql);
+        // console.log('values :>> ', values);
         const [data] = await connection.execute(sql, values);
-        console.log('data :>> ', data);
+        // console.log('data :>> ', data);
         if (data.length < 0) {
             new Error('select order detail failed... orderID :>>', orderID);
         }
@@ -302,13 +344,14 @@ async function selectProducts(productIDs) {
                         currency,
                         created_at AS createdAt,
                         product_status_id AS productStatusID,
-                        product_series_id AS productSeriesID
+                        product_series_id AS productSeriesID,
+                        product_id AS productID
                     FROM products
                     WHERE id IN`;
         let values = [];
 
-        console.log('sql :>> ', sql);
-        console.log('values :>> ', values);
+        // console.log('sql :>> ', sql);
+        // console.log('values :>> ', values);
         if (productIDs.length <= 0) {
             new Error('argument productIDs is empty...');
         }
@@ -319,7 +362,7 @@ async function selectProducts(productIDs) {
         if (data.length < 0) {
             new Error('select product failed... productIDs :>>', productIDs);
         }
-        console.log('data :>> ', data);
+        // console.log('data :>> ', data);
         return data;
     } catch (err) {
         console.log('err :>> ', err);
@@ -333,11 +376,11 @@ async function selectUser(userID) {
         let sql = `SELECT * FROM users WHERE id = ?`;
         let values = [userID];
 
-        console.log('sql :>> ', sql);
-        console.log('values :>> ', values);
+        // console.log('sql :>> ', sql);
+        // console.log('values :>> ', values);
         const [data] = await connection.execute(sql, values);
 
-        console.log('data :>> ', data);
+        // console.log('data :>> ', data);
         if (data.length < 0) {
             new Error('select user failed .... userID:>>', userID);
         }
@@ -398,10 +441,10 @@ async function insertOrder(data) {
             data.user.id,
         ];
 
-        console.log('sql :>> ', sql);
-        console.log('values :>> ', values);
+        // console.log('sql :>> ', sql);
+        // console.log('values :>> ', values);
         const [row] = await connection.execute(sql, values);
-        console.log('row :>> ', row);
+        // console.log('row :>> ', row);
         return row.insertId;
     } catch (err) {
         console.log('err :>> ', err);
@@ -425,7 +468,7 @@ async function insertOrderDetail(data) {
             .fill(' (?, ?, ?, ?, ?) ')
             .join(',');
 
-        console.log('data.products :>> ', data.products);
+        // console.log('data.products :>> ', data.products);
         data.products.forEach(function (e) {
             values = values.concat([
                 e.name,
@@ -436,13 +479,94 @@ async function insertOrderDetail(data) {
             ]);
         });
 
+        // console.log('sql :>> ', sql);
+        // console.log('values :>> ', values);
+        const [rows] = await connection.execute(sql, values);
+
+        // console.log('rows :>> ', rows);
+    } catch (err) {
+        console.log('err :>> ', err);
+    }
+}
+
+// 更新 Orders 表
+async function updateOrderStatus(orderID, orderStatus) {
+    try {
+        let sql = `UPDATE orders SET order_status_id = ? WHERE id = ?`;
+        let values = [orderStatus, orderID];
+
+        console.log('sql :>> ', sql);
+        console.log('values :>> ', values);
+        const [rows] = await connection.execute(sql, values);
+        console.log('rows :>> ', rows);
+    } catch (err) {
+        console.log('err :>> ', err);
+    }
+}
+// 新增 Download 表
+async function insertDownload(data) {
+    try {
+        let sql = `INSERT INTO download
+                         (status,
+                         created_at,
+                         user_id,
+                         product_id)
+                    VALUES (?, ?, ?, ?)`;
+        let values = [];
+
         console.log('sql :>> ', sql);
         console.log('values :>> ', values);
         const [rows] = await connection.execute(sql, values);
 
         console.log('rows :>> ', rows);
+        return rows.insertId;
     } catch (err) {
         console.log('err :>> ', err);
+        return null;
+    }
+}
+// 新增 Reviews 表
+async function insertReviews(data) {
+    try {
+        let sql = `INSERT INTO reviews
+                         (title,
+                         content,
+                         stars,
+                         img,
+                         likes,
+                         created_at,
+                         review_status_id,
+                         user_id,
+                         product_id)
+                    VALUES`;
+        let values = [];
+
+        sql += new Array(data.orderDetail.length)
+            .fill(' (?, ?, ?, ?, ?, ?, ?, ?, ?) ')
+            .join(',');
+        data.orderDetial.forEach(function (e) {
+            values = values.concat([
+                '',
+                '',
+                0,
+                '',
+                0,
+                0,
+                1,
+                data.user.id,
+                e.product_id,
+            ]);
+        });
+
+        console.log('sql :>> ', sql);
+        console.log('values :>> ', values);
+
+        const [data] = await connection.execute(sql, values);
+        console.log('data :>> ', data);
+        return data.insertId;
+    } catch (err) {
+        console.log('err :>> ', err);
+        return null;
     }
 }
 
