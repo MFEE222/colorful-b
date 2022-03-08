@@ -83,32 +83,32 @@ router.post('/', async function (req, res, next) {
     };
 
     // 取得商品資料
-    data.products = selectProducts(req.body.productsIDs);
+    data.products = await selectProducts(productIDs);
     // 取得使用者資料
-    data.user = selectUser(req.body.userID);
+    data.user = (await selectUser(userID))[0];
 
     // 彙整資料
-    data.number = Number.parseInt(Math.random() * 1000000);
-    data.firstProductName = products[0].name;
-    data.firstProductImg = products[0].img;
-    data.productsTotal = products.length;
-    data.priceOrigin = products.reduce((acc, curr) => {
+    data.orderNumber = Number.parseInt(Math.random() * 1000000);
+    data.firstProductName = data.products[0].name;
+    data.firstProductImg = data.products[0].img;
+    data.productsTotal = data.products.length;
+    data.priceOrigin = data.products.reduce((acc, curr) => {
         return acc + curr.price;
     }, 0);
     data.priceDiscount = 0;
-    data.priceTotal = priceOrigin + priceDiscount;
+    data.priceTotal = data.priceOrigin + data.priceDiscount;
     data.paymentMethod = descriptionPayment(5);
     data.purchaserName = req.body.purchaserName;
     data.purchaserEmail = req.body.purchaserEmail;
     data.createdAt = moment().format('YYYY-MM-DD');
     data.orderStatusID = 7;
-    data.firstProductID = products[0].id;
+    data.firstProductID = data.products[0].id;
     // 寫入訂單資料庫
-    data.orderID = insertOrder(data);
+    data.orderID = await insertOrder(data);
     console.log('data :>> ', data);
 
     // 寫入訂單細節資料庫
-    insertOrderDetail(data);
+    await insertOrderDetail(data);
 
     res.json({ statusCode: 2, allowPayment: true });
 });
@@ -300,11 +300,15 @@ async function selectProducts(productIDs) {
                         img,
                         price,
                         currency,
+                        created_at AS createdAt,
                         product_status_id AS productStatusID,
                         product_series_id AS productSeriesID
                     FROM products
                     WHERE id IN`;
         let values = [];
+
+        console.log('sql :>> ', sql);
+        console.log('values :>> ', values);
         if (productIDs.length <= 0) {
             new Error('argument productIDs is empty...');
         }
@@ -315,6 +319,7 @@ async function selectProducts(productIDs) {
         if (data.length < 0) {
             new Error('select product failed... productIDs :>>', productIDs);
         }
+        console.log('data :>> ', data);
         return data;
     } catch (err) {
         console.log('err :>> ', err);
@@ -395,10 +400,9 @@ async function insertOrder(data) {
 
         console.log('sql :>> ', sql);
         console.log('values :>> ', values);
-        const [data] = await connection.execute(sql, values);
-
-        console.log('data :>> ', data);
-        return data.insertId;
+        const [row] = await connection.execute(sql, values);
+        console.log('row :>> ', row);
+        return row.insertId;
     } catch (err) {
         console.log('err :>> ', err);
         return -1;
@@ -418,16 +422,17 @@ async function insertOrderDetail(data) {
         let values = [];
 
         sql += new Array(data.products.length)
-            .fill('(?, ?, ?, ?, ?)')
+            .fill(' (?, ?, ?, ?, ?) ')
             .join(',');
 
+        console.log('data.products :>> ', data.products);
         data.products.forEach(function (e) {
             values = values.concat([
                 e.name,
-                e.prodcut_price,
-                e.created_at,
-                e.order_id,
-                e.product_id,
+                e.price,
+                e.createdAt,
+                data.orderID,
+                e.id,
             ]);
         });
 
