@@ -7,7 +7,7 @@ const moment = require('moment');
 // FIXME: 測試用中間件（用來設定 req.session.user.id）
 router.use('/', function (req, res, next) {
     req.session.user = {
-        id: 3,
+        id: 4,
     };
     next();
 });
@@ -45,7 +45,7 @@ router.get('/', async function (req, res, next) {
     // 酬載
     const payload = {
         statusCode: 2,
-        orders: selectOrderByUser(userID, req.query),
+        orders: await selectOrderByUser(userID, req.query),
     };
 
     // 返回
@@ -211,19 +211,19 @@ async function selectOrderByUser(
         let sql = `SELECT  
                     id,
                     number,
-                    productName,
-                    productImg,
-                    productsTotal,
-                    priceOrigin,
-                    priceDiscount,
-                    priceTotal,
-                    paymentMethod,
-                    userName,
-                    userEmail,
-                    createdAt,
-                    orderStatusID,
-                    productID,
-                    userID 
+                    product_name,
+                    product_img,
+                    products_total,
+                    price_origin,
+                    price_discount,
+                    price_total,
+                    payment_method,
+                    purchaser_name,
+                    purchaser_email,
+                    created_at,
+                    order_status_id,
+                    product_id,
+                    user_id 
                 FROM orders WHERE user_id = ?`;
         let values = [userID];
         // filter
@@ -266,19 +266,19 @@ async function selectOrder(orderID) {
         let sql = `SELECT  
                     id,
                     number,
-                    productName,
-                    productImg,
-                    productsTotal,
-                    priceOrigin,
-                    priceDiscount,
-                    priceTotal,
-                    paymentMethod,
-                    userName,
-                    userEmail,
-                    createdAt,
-                    orderStatusID,
-                    productID,
-                    userID 
+                    product_name,
+                    product_img,
+                    products_total,
+                    price_origin,
+                    price_discount,
+                    price_total,
+                    payment_method,
+                    purchaser_name,
+                    purchaser_email,
+                    created_at,
+                    order_status_id,
+                    product_id,
+                    user_id 
                 FROM orders WHERE id = ?`;
         let values = [orderID];
 
@@ -400,8 +400,8 @@ async function insertOrder(data) {
                          price_discount,
                          price_total,
                          payment_method,
-                         user_name,
-                         user_email,
+                         purchaser_name,
+                         purchaser_email,
                          created_at,
                          order_status_id,
                          product_id,
