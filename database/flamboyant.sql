@@ -2,10 +2,10 @@
 -- version 5.1.1
 -- https://www.phpmyadmin.net/
 --
--- Host: localhost
--- Generation Time: Mar 08, 2022 at 04:50 PM
--- Server version: 10.4.21-MariaDB
--- PHP Version: 8.1.0
+-- 主機： localhost
+-- 產生時間： 2022 年 03 月 08 日 17:09
+-- 伺服器版本： 10.4.21-MariaDB
+-- PHP 版本： 8.1.2
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -18,7 +18,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `flamboyant`
+-- 資料庫: `flamboyant`
 --
 CREATE DATABASE IF NOT EXISTS `flamboyant` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 USE `flamboyant`;
@@ -26,7 +26,7 @@ USE `flamboyant`;
 -- --------------------------------------------------------
 
 --
--- Table structure for table `cart`
+-- 資料表結構 `cart`
 --
 
 DROP TABLE IF EXISTS `cart`;
@@ -39,7 +39,7 @@ CREATE TABLE `cart` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
--- Dumping data for table `cart`
+-- 傾印資料表的資料 `cart`
 --
 
 INSERT INTO `cart` (`id`, `created_at`, `product_id`, `user_id`, `valid`) VALUES
@@ -297,7 +297,7 @@ INSERT INTO `cart` (`id`, `created_at`, `product_id`, `user_id`, `valid`) VALUES
 -- --------------------------------------------------------
 
 --
--- Table structure for table `discount`
+-- 資料表結構 `discount`
 --
 
 DROP TABLE IF EXISTS `discount`;
@@ -312,7 +312,7 @@ CREATE TABLE `discount` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `discount_ticket`
+-- 資料表結構 `discount_ticket`
 --
 
 DROP TABLE IF EXISTS `discount_ticket`;
@@ -327,7 +327,7 @@ CREATE TABLE `discount_ticket` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `download`
+-- 資料表結構 `download`
 --
 
 DROP TABLE IF EXISTS `download`;
@@ -340,7 +340,7 @@ CREATE TABLE `download` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
--- Dumping data for table `download`
+-- 傾印資料表的資料 `download`
 --
 
 INSERT INTO `download` (`id`, `status`, `created_at`, `user_id`, `product_id`) VALUES
@@ -593,12 +593,12 @@ INSERT INTO `download` (`id`, `status`, `created_at`, `user_id`, `product_id`) V
 (247, 2, '2022-03-21', 160, 30),
 (248, 1, '2021-12-24', 101, 41),
 (249, 1, '2021-01-06', 240, 14),
-(250, 1, '2021-02-12', 222, 25),
+(250, 1, '2021-02-12', 222, 25);
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `favorites`
+-- 資料表結構 `favorites`
 --
 
 DROP TABLE IF EXISTS `favorites`;
@@ -610,7 +610,7 @@ CREATE TABLE `favorites` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
--- Dumping data for table `favorites`
+-- 傾印資料表的資料 `favorites`
 --
 
 INSERT INTO `favorites` (`id`, `created_at`, `product_id`, `user_id`) VALUES
@@ -868,7 +868,7 @@ INSERT INTO `favorites` (`id`, `created_at`, `product_id`, `user_id`) VALUES
 -- --------------------------------------------------------
 
 --
--- Table structure for table `orders`
+-- 資料表結構 `orders`
 --
 
 DROP TABLE IF EXISTS `orders`;
@@ -891,13 +891,13 @@ CREATE TABLE `orders` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
--- Dumping data for table `orders`
+-- 傾印資料表的資料 `orders`
 --
 
 INSERT INTO `orders` (`id`, `number`, `product_name`, `product_img`, `products_total`, `price_origin`, `price_discount`, `price_total`, `payment_method`, `purchaser_name`, `purchaser_email`, `created_at`, `order_status_id`, `product_id`, `user_id`) VALUES
 (1, '4406695249', 'Juice - Apple, 1.36l', 'http://dummyimage.com/127x100.png/dddddd/000000', 4, 175, 5, 75, 'Credit Card', 'bpatley0', 'drive0@meetup.com', '2022-01-29', 2, 181, 92),
 (2, '8094080655', 'Pork - Backs - Boneless', 'http://dummyimage.com/246x100.png/dddddd/000000', 2, 174, 3, 99, 'Apple Pay', 'kdewick1', 'bcathenod1@tmall.com', '2021-09-17', 6, 148, 237),
-(3, '1089386478', 'Soup - Knorr, Classic Can. Chili', 'http://dummyimage.com/226x100.png/ff4444/ffffff', 6, 63, 3, 140, 'Credit Card', 'drudyard2', 'sfealty2@elpais.com', '2021-05-13', 129, 163, 44),
+(3, '1089386478', 'Soup - Knorr, Classic Can. Chili', 'http://dummyimage.com/226x100.png/ff4444/ffffff', 6, 63, 3, 140, 'Credit Card', 'drudyard2', 'sfealty2@elpais.com', '2021-05-13', 5, 163, 44),
 (4, '7309570634', 'V8 Pet', 'http://dummyimage.com/180x100.png/cc0000/ffffff', 9, 46, 12, 71, '7-11 代碼繳費', 'tworland3', 'bmartugin3@paginegialle.it', '2021-10-26', 1, 138, 204),
 (5, '0625535839', 'Garam Marsala', 'http://dummyimage.com/123x100.png/cc0000/ffffff', 5, 104, 16, 44, '', 'noldford4', 'mdeantoni4@tmall.com', '2021-08-22', 6, 180, 99),
 (6, '5655314096', 'Pork - Back Ribs', 'http://dummyimage.com/168x100.png/ff4444/ffffff', 7, 45, 4, 140, '7-11 代碼繳費', 'llaughlin5', 'adraycott5@people.com.cn', '2021-10-29', 2, 247, 192),
@@ -1149,7 +1149,7 @@ INSERT INTO `orders` (`id`, `number`, `product_name`, `product_img`, `products_t
 -- --------------------------------------------------------
 
 --
--- Table structure for table `order_detail`
+-- 資料表結構 `order_detail`
 --
 
 DROP TABLE IF EXISTS `order_detail`;
@@ -1163,7 +1163,7 @@ CREATE TABLE `order_detail` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
--- Dumping data for table `order_detail`
+-- 傾印資料表的資料 `order_detail`
 --
 
 INSERT INTO `order_detail` (`id`, `product_name`, `product_price`, `created_at`, `order_id`, `product_id`) VALUES
@@ -1421,7 +1421,7 @@ INSERT INTO `order_detail` (`id`, `product_name`, `product_price`, `created_at`,
 -- --------------------------------------------------------
 
 --
--- Table structure for table `order_status`
+-- 資料表結構 `order_status`
 --
 
 DROP TABLE IF EXISTS `order_status`;
@@ -1433,7 +1433,7 @@ CREATE TABLE `order_status` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
--- Dumping data for table `order_status`
+-- 傾印資料表的資料 `order_status`
 --
 
 INSERT INTO `order_status` (`id`, `name`, `descp`, `created_at`) VALUES
@@ -1443,12 +1443,12 @@ INSERT INTO `order_status` (`id`, `name`, `descp`, `created_at`) VALUES
 (4, 'refund', '退款中', '2022-02-17'),
 (5, 'refunded', '已退款', '2022-02-17'),
 (6, 'close', '已關閉', '2022-02-17'),
-(7, 'mount', '待確認', '2022-03-06');
+(7, 'mount', '待確認', '2022-03-08');
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `payment_method`
+-- 資料表結構 `payment_method`
 --
 
 DROP TABLE IF EXISTS `payment_method`;
@@ -1461,7 +1461,7 @@ CREATE TABLE `payment_method` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
--- Dumping data for table `payment_method`
+-- 傾印資料表的資料 `payment_method`
 --
 
 INSERT INTO `payment_method` (`id`, `name`, `descp`, `created_at`, `valid`) VALUES
@@ -1469,12 +1469,12 @@ INSERT INTO `payment_method` (`id`, `name`, `descp`, `created_at`, `valid`) VALU
 (2, 'Google Pay', 'Google 支付', '2022-02-17', 1),
 (3, 'Line Pay', 'Line 第三方支付', '2022-02-17', 1),
 (4, '7-11', '代碼繳費', '2022-02-17', 1),
-(5, 'Credit Card', '信用卡', '2022-03-01', 1);
+(5, 'Credit Card', '信用卡', '2022-03-09', 1);
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `products`
+-- 資料表結構 `products`
 --
 
 DROP TABLE IF EXISTS `products`;
@@ -1496,7 +1496,7 @@ CREATE TABLE `products` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
--- Dumping data for table `products`
+-- 傾印資料表的資料 `products`
 --
 
 INSERT INTO `products` (`id`, `name`, `descp`, `img`, `price`, `currency`, `favorites`, `owners`, `stars`, `review_counts`, `created_at`, `expired_at`, `product_status_id`, `product_series_id`) VALUES
@@ -1547,7 +1547,7 @@ INSERT INTO `products` (`id`, `name`, `descp`, `img`, `price`, `currency`, `favo
 -- --------------------------------------------------------
 
 --
--- Table structure for table `product_series`
+-- 資料表結構 `product_series`
 --
 
 DROP TABLE IF EXISTS `product_series`;
@@ -1560,7 +1560,7 @@ CREATE TABLE `product_series` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
--- Dumping data for table `product_series`
+-- 傾印資料表的資料 `product_series`
 --
 
 INSERT INTO `product_series` (`id`, `name`, `descp`, `created_at`, `valid`) VALUES
@@ -1574,7 +1574,7 @@ INSERT INTO `product_series` (`id`, `name`, `descp`, `created_at`, `valid`) VALU
 -- --------------------------------------------------------
 
 --
--- Table structure for table `product_status`
+-- 資料表結構 `product_status`
 --
 
 DROP TABLE IF EXISTS `product_status`;
@@ -1587,7 +1587,7 @@ CREATE TABLE `product_status` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
--- Dumping data for table `product_status`
+-- 傾印資料表的資料 `product_status`
 --
 
 INSERT INTO `product_status` (`id`, `name`, `descp`, `created_at`, `valid`) VALUES
@@ -1600,7 +1600,7 @@ INSERT INTO `product_status` (`id`, `name`, `descp`, `created_at`, `valid`) VALU
 -- --------------------------------------------------------
 
 --
--- Table structure for table `product_tag`
+-- 資料表結構 `product_tag`
 --
 
 DROP TABLE IF EXISTS `product_tag`;
@@ -1611,7 +1611,7 @@ CREATE TABLE `product_tag` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
--- Dumping data for table `product_tag`
+-- 傾印資料表的資料 `product_tag`
 --
 
 INSERT INTO `product_tag` (`id`, `tag_id`, `product_id`) VALUES
@@ -1626,7 +1626,7 @@ INSERT INTO `product_tag` (`id`, `tag_id`, `product_id`) VALUES
 -- --------------------------------------------------------
 
 --
--- Table structure for table `reviews`
+-- 資料表結構 `reviews`
 --
 
 DROP TABLE IF EXISTS `reviews`;
@@ -1644,7 +1644,7 @@ CREATE TABLE `reviews` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
--- Dumping data for table `reviews`
+-- 傾印資料表的資料 `reviews`
 --
 
 INSERT INTO `reviews` (`id`, `title`, `content`, `stars`, `img`, `likes`, `created_at`, `review_status_id`, `user_id`, `product_id`) VALUES
@@ -1898,12 +1898,12 @@ INSERT INTO `reviews` (`id`, `title`, `content`, `stars`, `img`, `likes`, `creat
 (247, 'mattis odio donec vitae', 'Donec ut mauris eget massa tempor convallis. Nulla neque libero, convallis eget, eleifend luctus, ultricies eu, nibh. Quisque id justo sit amet sapien dignissim vestibulum. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Nulla dapibus dolor vel est.', 5, 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAA', 131, '2021-08-02', 3, 10, 8),
 (248, 'felis sed interdum venenatis', 'Maecenas pulvinar lobortis est. Phasellus sit amet erat. Nulla tempus.', 1, 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAA', 120, '2021-06-19', 3, 85, 50),
 (249, 'tempor convallis nulla', 'Quisque porta volutpat erat. Quisque erat eros, viverra eget, congue eget, semper rutrum, nulla. Nunc purus. Phasellus in felis. Donec semper sapien a libero.', 3, 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAA', 84, '2022-02-18', 2, 240, 42),
-(250, 'lobortis vel dapibus at diam', 'Suspendisse ornare consequat lectus. In est risus, auctor sed, tristique in, tempus sit amet, sem. Fusce consequat. Nulla nisl.', 5, 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAA', 41, '2021-08-18', 2, 235, 13),
+(250, 'lobortis vel dapibus at diam', 'Suspendisse ornare consequat lectus. In est risus, auctor sed, tristique in, tempus sit amet, sem. Fusce consequat. Nulla nisl.', 5, 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAA', 41, '2021-08-18', 2, 235, 13);
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `review_status`
+-- 資料表結構 `review_status`
 --
 
 DROP TABLE IF EXISTS `review_status`;
@@ -1915,7 +1915,7 @@ CREATE TABLE `review_status` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
--- Dumping data for table `review_status`
+-- 傾印資料表的資料 `review_status`
 --
 
 INSERT INTO `review_status` (`id`, `name`, `descp`, `created_at`) VALUES
@@ -1927,7 +1927,7 @@ INSERT INTO `review_status` (`id`, `name`, `descp`, `created_at`) VALUES
 -- --------------------------------------------------------
 
 --
--- Table structure for table `tag`
+-- 資料表結構 `tag`
 --
 
 DROP TABLE IF EXISTS `tag`;
@@ -1937,7 +1937,7 @@ CREATE TABLE `tag` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
--- Dumping data for table `tag`
+-- 傾印資料表的資料 `tag`
 --
 
 INSERT INTO `tag` (`id`, `name`) VALUES
@@ -1949,7 +1949,7 @@ INSERT INTO `tag` (`id`, `name`) VALUES
 -- --------------------------------------------------------
 
 --
--- Table structure for table `users`
+-- 資料表結構 `users`
 --
 
 DROP TABLE IF EXISTS `users`;
@@ -1971,7 +1971,7 @@ CREATE TABLE `users` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
--- Dumping data for table `users`
+-- 傾印資料表的資料 `users`
 --
 
 INSERT INTO `users` (`id`, `name`, `gender`, `account`, `email`, `password`, `phone`, `figure`, `birthday`, `created_at`, `modified_at`, `registered`, `password_hint`, `user_status_id`) VALUES
@@ -2229,7 +2229,7 @@ INSERT INTO `users` (`id`, `name`, `gender`, `account`, `email`, `password`, `ph
 -- --------------------------------------------------------
 
 --
--- Table structure for table `user_status`
+-- 資料表結構 `user_status`
 --
 
 DROP TABLE IF EXISTS `user_status`;
@@ -2241,7 +2241,7 @@ CREATE TABLE `user_status` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
--- Dumping data for table `user_status`
+-- 傾印資料表的資料 `user_status`
 --
 
 INSERT INTO `user_status` (`id`, `name`, `descp`, `created_at`) VALUES
@@ -2250,225 +2250,225 @@ INSERT INTO `user_status` (`id`, `name`, `descp`, `created_at`) VALUES
 (3, 'delete', '刪除', '2022-02-17');
 
 --
--- Indexes for dumped tables
+-- 已傾印資料表的索引
 --
 
 --
--- Indexes for table `cart`
+-- 資料表索引 `cart`
 --
 ALTER TABLE `cart`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `discount`
+-- 資料表索引 `discount`
 --
 ALTER TABLE `discount`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `discount_ticket`
+-- 資料表索引 `discount_ticket`
 --
 ALTER TABLE `discount_ticket`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `download`
+-- 資料表索引 `download`
 --
 ALTER TABLE `download`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `favorites`
+-- 資料表索引 `favorites`
 --
 ALTER TABLE `favorites`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `orders`
+-- 資料表索引 `orders`
 --
 ALTER TABLE `orders`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `order_detail`
+-- 資料表索引 `order_detail`
 --
 ALTER TABLE `order_detail`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `order_status`
+-- 資料表索引 `order_status`
 --
 ALTER TABLE `order_status`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `payment_method`
+-- 資料表索引 `payment_method`
 --
 ALTER TABLE `payment_method`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `products`
+-- 資料表索引 `products`
 --
 ALTER TABLE `products`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `product_series`
+-- 資料表索引 `product_series`
 --
 ALTER TABLE `product_series`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `product_status`
+-- 資料表索引 `product_status`
 --
 ALTER TABLE `product_status`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `product_tag`
+-- 資料表索引 `product_tag`
 --
 ALTER TABLE `product_tag`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `reviews`
+-- 資料表索引 `reviews`
 --
 ALTER TABLE `reviews`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `review_status`
+-- 資料表索引 `review_status`
 --
 ALTER TABLE `review_status`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `tag`
+-- 資料表索引 `tag`
 --
 ALTER TABLE `tag`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `users`
+-- 資料表索引 `users`
 --
 ALTER TABLE `users`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `user_status`
+-- 資料表索引 `user_status`
 --
 ALTER TABLE `user_status`
   ADD PRIMARY KEY (`id`);
 
 --
--- AUTO_INCREMENT for dumped tables
+-- 在傾印的資料表使用自動遞增(AUTO_INCREMENT)
 --
 
 --
--- AUTO_INCREMENT for table `cart`
+-- 使用資料表自動遞增(AUTO_INCREMENT) `cart`
 --
 ALTER TABLE `cart`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=251;
 
 --
--- AUTO_INCREMENT for table `discount`
+-- 使用資料表自動遞增(AUTO_INCREMENT) `discount`
 --
 ALTER TABLE `discount`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `discount_ticket`
+-- 使用資料表自動遞增(AUTO_INCREMENT) `discount_ticket`
 --
 ALTER TABLE `discount_ticket`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `download`
+-- 使用資料表自動遞增(AUTO_INCREMENT) `download`
 --
 ALTER TABLE `download`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=251;
 
 --
--- AUTO_INCREMENT for table `favorites`
+-- 使用資料表自動遞增(AUTO_INCREMENT) `favorites`
 --
 ALTER TABLE `favorites`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=251;
 
 --
--- AUTO_INCREMENT for table `orders`
+-- 使用資料表自動遞增(AUTO_INCREMENT) `orders`
 --
 ALTER TABLE `orders`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=251;
 
 --
--- AUTO_INCREMENT for table `order_detail`
+-- 使用資料表自動遞增(AUTO_INCREMENT) `order_detail`
 --
 ALTER TABLE `order_detail`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=251;
 
 --
--- AUTO_INCREMENT for table `order_status`
+-- 使用資料表自動遞增(AUTO_INCREMENT) `order_status`
 --
 ALTER TABLE `order_status`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
--- AUTO_INCREMENT for table `payment_method`
+-- 使用資料表自動遞增(AUTO_INCREMENT) `payment_method`
 --
 ALTER TABLE `payment_method`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
--- AUTO_INCREMENT for table `products`
+-- 使用資料表自動遞增(AUTO_INCREMENT) `products`
 --
 ALTER TABLE `products`
   MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=44;
 
 --
--- AUTO_INCREMENT for table `product_series`
+-- 使用資料表自動遞增(AUTO_INCREMENT) `product_series`
 --
 ALTER TABLE `product_series`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
--- AUTO_INCREMENT for table `product_status`
+-- 使用資料表自動遞增(AUTO_INCREMENT) `product_status`
 --
 ALTER TABLE `product_status`
   MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
--- AUTO_INCREMENT for table `product_tag`
+-- 使用資料表自動遞增(AUTO_INCREMENT) `product_tag`
 --
 ALTER TABLE `product_tag`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
--- AUTO_INCREMENT for table `reviews`
+-- 使用資料表自動遞增(AUTO_INCREMENT) `reviews`
 --
 ALTER TABLE `reviews`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=253;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=251;
 
 --
--- AUTO_INCREMENT for table `review_status`
+-- 使用資料表自動遞增(AUTO_INCREMENT) `review_status`
 --
 ALTER TABLE `review_status`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
--- AUTO_INCREMENT for table `tag`
+-- 使用資料表自動遞增(AUTO_INCREMENT) `tag`
 --
 ALTER TABLE `tag`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
--- AUTO_INCREMENT for table `users`
+-- 使用資料表自動遞增(AUTO_INCREMENT) `users`
 --
 ALTER TABLE `users`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=251;
 
 --
--- AUTO_INCREMENT for table `user_status`
+-- 使用資料表自動遞增(AUTO_INCREMENT) `user_status`
 --
 ALTER TABLE `user_status`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
