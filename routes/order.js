@@ -3,6 +3,9 @@ const router = express.Router();
 const connection = require('../utils/db');
 // third-part
 const moment = require('moment');
+const {
+    default: DomainCredentialsClient,
+} = require('mailgun.js/dist/lib/domainsCredentials');
 
 // FIXME: 測試用中間件（用來設定 req.session.user.id）
 // router.use('/', function (req, res, next) {
@@ -124,6 +127,25 @@ router.post('/', async function (req, res, next) {
         ? JSON.parse(req.body.productIDs)
         : req.body.productIDs;
 
+    // 變數
+    const data = {
+        orderID: '', // 資料庫訂單成立後 ID
+        orderNumber: '', // 資料庫訂單成立後號碼
+        firstProductName: '', // 商品陣列中第一筆商品名稱，用來當作列表封面
+        firstProductImg: '', // 商品陣列中第一筆商品圖片，用來當作列表封面
+        firstProductID: '', // 商品陣列中第一筆商品 ID，用來當作列表封面
+        productsTotal: '', // 本筆訂單總商品數量
+        priceOrigin: '', // 本筆訂單原始總金額
+        priceDiscount: '', // 本筆訂單折扣金額
+        priceTotal: '', // 本筆訂單最後總金額
+        paymentMethod: '', // 本筆訂單付款方式
+        purchaserName: '', // 購買者名稱
+        purchaserEmail: '', // 購買者電郵
+        createdAt: '', // 訂單成立時間
+        orderStatusID: '', // 訂單狀態，初始化狀態
+        user: '', // 使用者資料
+    };
+
     // 驗證
     if (!authUser(userID, req)) {
         res.json({
@@ -134,132 +156,45 @@ router.post('/', async function (req, res, next) {
             orderStatus: -1,
         });
     }
-    // Res
-    // {
-    //     statusCode,
-    //     allowPayment,
-    //     orderID,
-    //     orderNumber,
-    //     orderStatus, // 7: mount 待確認, 1: pending 待付款, 2: cancel 已取消, 3: paid 已付款, 4: refund 退款中, 5: refunded 已退款, 6: close 已關閉
-    // }
-    // 酬載
-    const payload = { statusCode: 2, allowPayment: true };
 
     // 取得商品資料
-    const products = selectProducts(productIDs);
+    data.products = selectProducts(req.body.productsIDs);
     // 取得使用者資料
-    const user = selectUser(userID);
+    data.user = selectUser(req.body.userID);
 
-    // 寫入 orders 表一筆資料
-    try {
-        let sql = `INSERT INTO orders
-                        (number,
-                         product_name,
-                         product_img,
-                         products_total,
-                         price_origin,
-                         price_discount,
-                         price_total,
-                         payment_method,
-                         user_name,
-                         user_email,
-                         created_at,
-                         order_status_id,
-                         product_id,
-                         user_id) 
-                    OUTPUT Inserted.ID
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                    `;
-        // SELECT SCOPE_IDENTITY()
-        let values = [];
-        const number = Number.parseInt(Math.random() * 1000000);
-        const productName = products[0].name;
-        const productImg = products[0].img;
-        const productsTotal = products.length;
-        const priceOrigin = products.reduce((acc, curr) => {
-            return acc + curr.price;
-        }, 0);
-        const priceDiscount = 0;
-        const priceTotal = priceOrigin + priceDiscount;
-        const paymentMethod = descriptionPayment(5);
-        const userName = user.name;
-        const userEmail = user.email;
-        const createdAt = moment().format('YYYY-MM-DD');
-        const orderStatusID = 7;
-        const productID = products[0].id;
-        // const userID = user.id;
-        console.log('number :>> ', number);
-        console.log('productName :>> ', productName);
-        console.log('productImg :>> ', productImg);
-        console.log('productsTotal :>> ', productsTotal);
-        console.log('priceOrigin :>> ', priceOrigin);
-        console.log('priceDiscount :>> ', priceDiscount);
-        console.log('priceTotal :>> ', priceTotal);
-        console.log('paymentMethod :>> ', paymentMethod);
-        console.log('userName :>> ', userName);
-        console.log('userEmail :>> ', userEmail);
-        console.log('createdAt :>> ', createdAt);
-        console.log('orderStatusID :>> ', orderStatusID);
-        console.log('productID :>> ', productID);
-        console.log('userID :>> ', userID);
-        values = values.concat([
-            number,
-            productName,
-            productImg,
-            productsTotal,
-            priceOrigin,
-            priceDiscount,
-            priceTotal,
-            paymentMethod,
-            userName,
-            userEmail,
-            createdAt,
-            orderStatusID,
-            productID,
-            userID,
-        ]);
+    // 彙整資料
+    data.number = Number.parseInt(Math.random() * 1000000);
+    data.firstProductName = products[0].name;
+    data.firstProductImg = products[0].img;
+    data.productsTotal = products.length;
+    data.priceOrigin = products.reduce((acc, curr) => {
+        return acc + curr.price;
+    }, 0);
+    data.priceDiscount = 0;
+    data.priceTotal = priceOrigin + priceDiscount;
+    data.paymentMethod = descriptionPayment(5);
+    data.purchaserName = req.body.purchaserName;
+    data.purchaserEmail = req.body.purchaserEmail;
+    data.createdAt = moment().format('YYYY-MM-DD');
+    data.orderStatusID = 7;
+    data.firstProductID = products[0].id;
+    // 寫入訂單資料庫
+    data.orderID = insertOrder(data);
+    console.log('data :>> ', data);
 
-        console.log('sql :>> ', sql);
-        console.log('values :>> ', values);
+    // 寫入訂單細節資料庫
+    insertOrderDetail(data);
 
-        const [data, field] = await connection.execute(sql, values);
-        console.log('data :>> ', data);
-        console.log('field :>> ', field);
-    } catch (err) {
-        console.log('err :>> ', err);
-    }
-
-    // 寫入 order_detail 多筆資料
-    // product_name
-    // product_price
-    // created_at
-    // order_id
-    // product_id
-
-    productIDs.forEach(function (e) {
-        insertOrderDetail(
-            e.productName,
-            e.productPrice,
-            moment().format('YYYY-MM-DD'),
-            3,
-            e.id
-        );
-    });
-
-    res.json(payload);
+    res.json({ statusCode: 2, allowPayment: true });
 });
 
 // API_POST_ORDER_PAYMENT
 router.post('/payment', function (req, res, next) {
-    // download table
-    // review table
-    //
     // 核對身份
     // 驗證付款資訊
     // 發卡銀行驗證
     // 付款成功
-    // 資料庫
-    //
+    // 資料庫（orders, download, reviews）
 });
 
 // 函數 Function
@@ -452,6 +387,7 @@ async function selectProducts(productIDs) {
     }
 }
 
+// 選擇使用者資料
 async function selectUser(userID) {
     try {
         let sql = `SELECT * FROM users WHERE id = ?`;
@@ -472,24 +408,99 @@ async function selectUser(userID) {
     }
 }
 
-async function insertOrderDetail(
-    productName,
-    productPrice,
-    createdAt,
-    orderID,
-    productID
-) {
+// 寫入訂單資料庫
+async function insertOrder(data) {
+    try {
+        let sql = `INSERT INTO orders
+                        (number,
+                         product_name,
+                         product_img,
+                         products_total,
+                         price_origin,
+                         price_discount,
+                         price_total,
+                         payment_method,
+                         user_name,
+                         user_email,
+                         created_at,
+                         order_status_id,
+                         product_id,
+                         user_id)
+                    VALUES
+                         (?,
+                          ?,
+                          ?,
+                          ?,
+                          ?,
+                          ?,
+                          ?,
+                          ?,
+                          ?,
+                          ?,
+                          ?,
+                          ?,
+                          ?,
+                          ?)`;
+        let values = [
+            data.orderNumber,
+            data.firstProductName,
+            data.firstProductImg,
+            data.productsTotal,
+            data.priceOrigin,
+            data.priceDiscount,
+            data.priceTotal,
+            data.paymentMethod,
+            data.purchaserName,
+            data.purchaserEmail,
+            data.createdAt,
+            data.orderStatusID,
+            data.firstProductID,
+            data.user.id,
+        ];
+
+        console.log('sql :>> ', sql);
+        console.log('values :>> ', values);
+        const [data] = await connection.execute(sql, values);
+
+        console.log('data :>> ', data);
+        return data.insertId;
+    } catch (err) {
+        console.log('err :>> ', err);
+        return -1;
+    }
+}
+
+// 寫入訂單細節資料庫
+async function insertOrderDetail(data) {
     try {
         let sql = `INSERT INTO order_detail
                         (product_name,
-                        product_price,
-                        created_at,
-                        order_id,
-                        product_id)
-                    VALUES (?, ?, ?, ?, ?)`;
-        let values = [productName, productPrice, createdAt, orderID, productID];
+                         product_price,
+                         created_at,
+                         order_id,
+                         product_id)
+                    VALUES`;
+        let values = [];
 
-        await connection.execute(sql.values);
+        sql += new Array(data.products.length)
+            .fill('(?, ?, ?, ?, ?)')
+            .join(',');
+
+        data.products.forEach(function (e) {
+            values = values.concat([
+                e.name,
+                e.prodcut_price,
+                e.created_at,
+                e.order_id,
+                e.product_id,
+            ]);
+        });
+
+        console.log('sql :>> ', sql);
+        console.log('values :>> ', values);
+        const [rows] = await connection.execute(sql, values);
+
+        console.log('rows :>> ', rows);
     } catch (err) {
         console.log('err :>> ', err);
     }
