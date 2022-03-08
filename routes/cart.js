@@ -56,10 +56,10 @@ router.get('/', async function (req, res, next) {
             sql = sql.concat(' OFFSET ?');
             values.push(offset);
         }
-        console.log('sql :>> ', sql);
-        console.log('values :>> ', values);
+        // console.log('sql :>> ', sql);
+        // console.log('values :>> ', values);
         const [data] = await connection.execute(sql, values);
-        console.log('data :>> ', data);
+        // console.log('data :>> ', data);
         payload.cart = data;
     } catch (err) {
         console.log('err :>> ', err);
