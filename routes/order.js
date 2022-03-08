@@ -3,17 +3,17 @@ const router = express.Router();
 const connection = require('../utils/db');
 // third-part
 const moment = require('moment');
-const {
-    default: DomainCredentialsClient,
-} = require('mailgun.js/dist/lib/domainsCredentials');
 
 // FIXME: 測試用中間件（用來設定 req.session.user.id）
-// router.use('/', function (req, res, next) {
-//     req.session.user = {
-//         id: 3,
-//     };
-//     next();
-// });
+router.use('/', function (req, res, next) {
+    req.session.user = {
+        id: 3,
+    };
+    next();
+});
+
+// 驗證身份
+router.use('/', authUser);
 
 // API_GET_ORDERS
 // 取得訂單資料
@@ -41,13 +41,6 @@ router.get('/', async function (req, res, next) {
     console.log('req.query :>> ', req.query);
     const { userID, orderStatus, date, sortBy, sortType, limit, offset } =
         req.query;
-    // 驗證
-    if (!authUser(userID, req)) {
-        res.json({
-            statusCode: 1,
-            orders: [],
-        });
-    }
 
     // 酬載
     const payload = {
@@ -86,13 +79,6 @@ router.get('/detail', async function (req, res, next) {
     console.log('req.query :>> ', req.query);
     const { userID, orderID, orderNumber, sortBy, sortType, limit, offset } =
         req.query;
-    // 驗證
-    if (!authUser(userID, req)) {
-        res.json({
-            statusCode: 1,
-            orderDetail: [],
-        });
-    }
     // 酬載
     const payload = {
         statusCode: 2,
@@ -146,17 +132,6 @@ router.post('/', async function (req, res, next) {
         user: '', // 使用者資料
     };
 
-    // 驗證
-    if (!authUser(userID, req)) {
-        res.json({
-            statusCode: 1,
-            allowPayment: false,
-            orderID: '',
-            orderNumber: '',
-            orderStatus: -1,
-        });
-    }
-
     // 取得商品資料
     data.products = selectProducts(req.body.productsIDs);
     // 取得使用者資料
@@ -190,13 +165,6 @@ router.post('/', async function (req, res, next) {
 
 // API_POST_ORDER_PAYMENT
 router.post('/payment', function (req, res, next) {
-    // 核對身份
-    if (!authUser(req.userID)) {
-        res.json({
-            statusCode: 1,
-            resultPayment: false,
-        });
-    }
     // 驗證付款資訊
     // 發卡銀行驗證
     // 付款成功
@@ -222,10 +190,16 @@ function descriptionPayment(paymentID) {
     }
 }
 
-// 驗證身分
-function authUser(userID, eq) {
-    if (!req.session.user.id) return false;
-    return userID == req.session.user.id;
+// 驗證身分 中間件
+function authUser(req, res, next) {
+    const userID = req.userID;
+    if (!req.session.user.id) {
+        res.json({
+            statusCode: 1,
+            result: false,
+        });
+    }
+    next();
 }
 
 // 取得資料庫訂單資料
