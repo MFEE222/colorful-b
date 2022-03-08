@@ -114,7 +114,8 @@ router.post('/', async function (req, res, next) {
 });
 
 // API_POST_ORDER_PAYMENT
-router.post('/payment', function (req, res, next) {
+router.post('/payment', async function (req, res, next) {
+    console.log('req.body :>> ', req.body);
     const { userID, orderID, creditCard, csv, expiredDate } = req.body;
     // 驗證付款資訊
     if (!creditCard || !csv || !expiredDate) {
@@ -139,17 +140,22 @@ router.post('/payment', function (req, res, next) {
 
     // 取得使用者資料
     data.user = (await selectUser(userID))[0];
+    console.log('data.user :>> ', data.user);
 
     // 取得訂單資料
     data.order = (await selectOrderByUser(orderID, userID))[0];
+    console.log('data.order :>> ', data.order);
 
     // 取得訂單細節資料 []
-    data.orderDetail = await selectOrderDetail(orderID);
+    data.orderDetail = await selectOrderDetail(orderID, req.body);
+    console.log('data.orderDetail :>> ', data.orderDetail);
 
     // 取得商品資料
-    const p = data.orderDetail.map((e) => e.productID);
+    // const p = data.orderDetail.map((e) => e.productID);
+    const p = [11, 22];
     data.products = await selectProducts(p);
-
+    console.log('data.products :>> ', data.products);
+    console.log('here');
     // 資料庫（orders, download, reviews）
     await updateOrderStatus(3, orderID);
 
@@ -335,6 +341,7 @@ async function selectOrderDetail(orderID, { sortBy, limit, offset }) {
 
 // 選擇商品資料
 async function selectProducts(productIDs) {
+    // console.log('productIDs :>> ', productIDs);
     try {
         let sql = `SELECT
                         id, 
@@ -344,25 +351,24 @@ async function selectProducts(productIDs) {
                         currency,
                         created_at AS createdAt,
                         product_status_id AS productStatusID,
-                        product_series_id AS productSeriesID,
-                        product_id AS productID
+                        product_series_id AS productSeriesID
                     FROM products
                     WHERE id IN`;
         let values = [];
 
-        // console.log('sql :>> ', sql);
-        // console.log('values :>> ', values);
         if (productIDs.length <= 0) {
             new Error('argument productIDs is empty...');
         }
         sql += ' (' + new Array(productIDs.length).fill('?').join(',') + ')';
         values = values.concat(productIDs);
 
+        console.log('sql :>> ', sql);
+        console.log('values :>> ', values);
         const [data] = await connection.execute(sql, values);
         if (data.length < 0) {
             new Error('select product failed... productIDs :>>', productIDs);
         }
-        // console.log('data :>> ', data);
+        console.log('data :>> ', data);
         return data;
     } catch (err) {
         console.log('err :>> ', err);
@@ -511,8 +517,18 @@ async function insertDownload(data) {
                          created_at,
                          user_id,
                          product_id)
-                    VALUES (?, ?, ?, ?)`;
+                    VALUES`;
         let values = [];
+
+        sql += new Array(data.products.length).fill(' (?, ?, ?, ?) ').join(',');
+        data.products.forEach(function (e) {
+            values = values.concat([
+                1,
+                '2000-01-01',
+                data.user.id,
+                e.id, // 商品 id
+            ]);
+        });
 
         console.log('sql :>> ', sql);
         console.log('values :>> ', values);
@@ -544,7 +560,7 @@ async function insertReviews(data) {
         sql += new Array(data.orderDetail.length)
             .fill(' (?, ?, ?, ?, ?, ?, ?, ?, ?) ')
             .join(',');
-        data.orderDetial.forEach(function (e) {
+        data.orderDetail.forEach(function (e) {
             values = values.concat([
                 '',
                 '',
@@ -554,16 +570,16 @@ async function insertReviews(data) {
                 0,
                 1,
                 data.user.id,
-                e.product_id,
+                e.productID,
             ]);
         });
 
         console.log('sql :>> ', sql);
         console.log('values :>> ', values);
 
-        const [data] = await connection.execute(sql, values);
-        console.log('data :>> ', data);
-        return data.insertId;
+        const [rows] = await connection.execute(sql, values);
+        console.log('rows :>> ', rows);
+        return rows.insertId;
     } catch (err) {
         console.log('err :>> ', err);
         return null;
