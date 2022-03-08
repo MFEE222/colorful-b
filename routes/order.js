@@ -145,6 +145,11 @@ router.post('/', async function (req, res, next) {
     // 酬載
     const payload = { statusCode: 2, allowPayment: true };
 
+    // 取得商品資料
+    const products = selectProducts(productIDs);
+    // 取得使用者資料
+    const user = selectUser(userID);
+
     // 寫入 orders 表一筆資料
     try {
         let sql = `INSERT INTO orders
@@ -161,7 +166,11 @@ router.post('/', async function (req, res, next) {
                          created_at,
                          order_status_id,
                          product_id,
-                         user_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+                         user_id) 
+                    OUTPUT Inserted.ID
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    `;
+        // SELECT SCOPE_IDENTITY()
         let values = [];
         const number = Number.parseInt(Math.random() * 1000000);
         const productName = products[0].name;
@@ -210,11 +219,11 @@ router.post('/', async function (req, res, next) {
             userID,
         ]);
 
-        console.log('=====================================');
         console.log('sql :>> ', sql);
         console.log('values :>> ', values);
 
         const [data, field] = await connection.execute(sql, values);
+        console.log('data :>> ', data);
         console.log('field :>> ', field);
     } catch (err) {
         console.log('err :>> ', err);
@@ -241,7 +250,17 @@ router.post('/', async function (req, res, next) {
 });
 
 // API_POST_ORDER_PAYMENT
-router.post('/payment', function (req, res, next) {});
+router.post('/payment', function (req, res, next) {
+    // download table
+    // review table
+    //
+    // 核對身份
+    // 驗證付款資訊
+    // 發卡銀行驗證
+    // 付款成功
+    // 資料庫
+    //
+});
 
 // 函數 Function
 // 付款方式描述
@@ -425,6 +444,26 @@ async function selectProducts(productIDs) {
         const [data] = await connection.execute(sql, values);
         if (data.length < 0) {
             new Error('select product failed... productIDs :>>', productIDs);
+        }
+        return data;
+    } catch (err) {
+        console.log('err :>> ', err);
+        return null;
+    }
+}
+
+async function selectUser(userID) {
+    try {
+        let sql = `SELECT * FROM users WHERE id = ?`;
+        let values = [userID];
+
+        console.log('sql :>> ', sql);
+        console.log('values :>> ', values);
+        const [data] = await connection.execute(sql, values);
+
+        console.log('data :>> ', data);
+        if (data.length < 0) {
+            new Error('select user failed .... userID:>>', userID);
         }
         return data;
     } catch (err) {
