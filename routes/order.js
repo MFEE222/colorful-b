@@ -16,27 +16,6 @@ router.use('/', function (req, res, next) {
 router.use('/', authUser);
 
 // API_GET_ORDERS
-// 取得訂單資料
-// Req
-// {
-//     sessionID, (header 會自動帶過去)
-//     userID,
-//     orderStatus,
-//     date,
-//     sortBy,
-//     sortType,
-//     limit,
-//     offset
-// }
-// Res
-// {
-//     userID,
-//     orderID / orderNumber,
-//     sortBy,
-//     sortType,
-//     limit,
-//     offset
-// }
 router.get('/', async function (req, res, next) {
     console.log('req.query :>> ', req.query);
     const { userID, orderStatus, date, sortBy, sortType, limit, offset } =
@@ -45,7 +24,7 @@ router.get('/', async function (req, res, next) {
     // 酬載
     const payload = {
         statusCode: 2,
-        orders: await selectOrderByUser(userID, req.query),
+        order: await selectOrdersByUser(userID, req.query),
     };
 
     // 返回
@@ -53,59 +32,30 @@ router.get('/', async function (req, res, next) {
 });
 
 // API_GET_ORDER_DETAIL
-// Req
-// {
-//     sessionID, (header 會自動帶過去)
-//     userID,
-//     orderID / orderNumber,
-//     sortBy,
-//     sortType,
-//     limit,
-//     offset
-// }
-// Res
-// {
-//     statusCode,
-//     orderDetail: []
-// }
-
-//     orderDetailID,
-//     productName,
-//     productPrice,
-//     createdAt,
-//     orderID,
-//     productID
 router.get('/detail', async function (req, res, next) {
     console.log('req.query :>> ', req.query);
     const { userID, orderID, orderNumber, sortBy, sortType, limit, offset } =
         req.query;
     // 酬載
+    const order = await selectOrderByUser(orderID, userID);
+
+    if (!order[0]) {
+        res.json({
+            statusCode: 1,
+            orderDetail: [],
+        });
+        return;
+    }
+
     const payload = {
         statusCode: 2,
-        orderDetailID: selectOrderDetail(orderID, req.query),
+        orderDetail: await selectOrderDetail(order[0].id, req.query),
     };
     // 返回
     res.json(payload);
 });
 
 // API_POST_ORDER
-// 請求訂單成立
-// Req
-// {
-//     sessionID,
-//     userID,
-//     productIDs,
-//     purchaserName,
-//     purchaserEmail,
-// }
-// Res
-// {
-//     statusCode,
-//     allowPayment,
-//     orderID,
-//     orderNumber,
-//     orderStatus, // 7: mount 待確認, 1: pending 待付款, 2: cancel 已取消, 3: paid 已付款, 4: refund 退款中, 5: refunded 已退款, 6: close 已關閉
-// }
 router.post('/', async function (req, res, next) {
     console.log('req.body :>> ', req.body);
     const userID = req.body.userID;
@@ -203,7 +153,7 @@ function authUser(req, res, next) {
 }
 
 // 取得資料庫訂單資料
-async function selectOrderByUser(
+async function selectOrdersByUser(
     userID,
     { orderStatus, sortBy, limit, offset }
 ) {
@@ -244,11 +194,11 @@ async function selectOrderByUser(
             values.push(offset);
         }
         // test
-        console.log('sql :>> ', sql);
-        console.log('values :>> ', values);
+        // console.log('sql :>> ', sql);
+        // console.log('values :>> ', values);
         // execute
         const [data] = await connection.execute(sql, values);
-        console.log('data :>> ', data);
+        // console.log('data :>> ', data);
         if (data.length < 0) {
             new Error('select order failed... userID :>>', userID);
         }
@@ -261,7 +211,7 @@ async function selectOrderByUser(
 }
 
 // 使用訂單號碼選擇訂單
-async function selectOrder(orderID) {
+async function selectOrderByUser(orderID, userID) {
     try {
         let sql = `SELECT  
                     id,
@@ -279,10 +229,13 @@ async function selectOrder(orderID) {
                     order_status_id,
                     product_id,
                     user_id 
-                FROM orders WHERE id = ?`;
-        let values = [orderID];
+                FROM orders WHERE id = ? AND user_id = ?`;
+        let values = [orderID, userID];
 
+        console.log('sql :>> ', sql);
+        console.log('values :>> ', values);
         const [data] = await connection.execute(sql, values);
+        console.log('data :>> ', data);
         if (data.length < 0) {
             new Error('select order failed... userID :>>', userID);
         }
@@ -309,22 +262,24 @@ async function selectOrderDetail(orderID, { sortBy, limit, offset }) {
         let values = [orderID];
 
         if (sortBy) {
-            sql = sql.concat(' ORDER BY ?');
+            sql += ' ORDER BY ?';
             values.push(sortBy);
         }
+
         if (limit) {
-            sql = sql.concat(' LIMIT ?');
+            sql += ' LIMIT ?';
             values.push(limit);
         }
+
         if (offset) {
-            sql = sql.concat(' OFFSET ?');
+            sql += ' OFFSET ?';
             values.push(offset);
         }
 
         console.log('sql :>> ', sql);
         console.log('values :>> ', values);
         const [data] = await connection.execute(sql, values);
-
+        console.log('data :>> ', data);
         if (data.length < 0) {
             new Error('select order detail failed... orderID :>>', orderID);
         }
