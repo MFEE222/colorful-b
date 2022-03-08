@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Mar 06, 2022 at 04:44 AM
+-- Generation Time: Mar 08, 2022 at 04:50 PM
 -- Server version: 10.4.21-MariaDB
 -- PHP Version: 8.1.0
 
@@ -593,7 +593,7 @@ INSERT INTO `download` (`id`, `status`, `created_at`, `user_id`, `product_id`) V
 (247, 2, '2022-03-21', 160, 30),
 (248, 1, '2021-12-24', 101, 41),
 (249, 1, '2021-01-06', 240, 14),
-(250, 1, '2021-02-12', 222, 25);
+(250, 1, '2021-02-12', 222, 25),
 
 -- --------------------------------------------------------
 
@@ -882,8 +882,8 @@ CREATE TABLE `orders` (
   `price_discount` int(11) DEFAULT NULL,
   `price_total` int(11) DEFAULT NULL,
   `payment_method` varchar(11) DEFAULT NULL,
-  `user_name` varchar(50) DEFAULT NULL,
-  `user_email` varchar(50) DEFAULT NULL,
+  `purchaser_name` varchar(50) DEFAULT NULL,
+  `purchaser_email` varchar(50) DEFAULT NULL,
   `created_at` date DEFAULT NULL,
   `order_status_id` int(11) DEFAULT NULL,
   `product_id` int(11) DEFAULT NULL,
@@ -894,10 +894,10 @@ CREATE TABLE `orders` (
 -- Dumping data for table `orders`
 --
 
-INSERT INTO `orders` (`id`, `number`, `product_name`, `product_img`, `products_total`, `price_origin`, `price_discount`, `price_total`, `payment_method`, `user_name`, `user_email`, `created_at`, `order_status_id`, `product_id`, `user_id`) VALUES
+INSERT INTO `orders` (`id`, `number`, `product_name`, `product_img`, `products_total`, `price_origin`, `price_discount`, `price_total`, `payment_method`, `purchaser_name`, `purchaser_email`, `created_at`, `order_status_id`, `product_id`, `user_id`) VALUES
 (1, '4406695249', 'Juice - Apple, 1.36l', 'http://dummyimage.com/127x100.png/dddddd/000000', 4, 175, 5, 75, 'Credit Card', 'bpatley0', 'drive0@meetup.com', '2022-01-29', 2, 181, 92),
 (2, '8094080655', 'Pork - Backs - Boneless', 'http://dummyimage.com/246x100.png/dddddd/000000', 2, 174, 3, 99, 'Apple Pay', 'kdewick1', 'bcathenod1@tmall.com', '2021-09-17', 6, 148, 237),
-(3, '1089386478', 'Soup - Knorr, Classic Can. Chili', 'http://dummyimage.com/226x100.png/ff4444/ffffff', 6, 63, 3, 140, 'Credit Card', 'drudyard2', 'sfealty2@elpais.com', '2021-05-13', 5, 163, 44),
+(3, '1089386478', 'Soup - Knorr, Classic Can. Chili', 'http://dummyimage.com/226x100.png/ff4444/ffffff', 6, 63, 3, 140, 'Credit Card', 'drudyard2', 'sfealty2@elpais.com', '2021-05-13', 129, 163, 44),
 (4, '7309570634', 'V8 Pet', 'http://dummyimage.com/180x100.png/cc0000/ffffff', 9, 46, 12, 71, '7-11 代碼繳費', 'tworland3', 'bmartugin3@paginegialle.it', '2021-10-26', 1, 138, 204),
 (5, '0625535839', 'Garam Marsala', 'http://dummyimage.com/123x100.png/cc0000/ffffff', 5, 104, 16, 44, '', 'noldford4', 'mdeantoni4@tmall.com', '2021-08-22', 6, 180, 99),
 (6, '5655314096', 'Pork - Back Ribs', 'http://dummyimage.com/168x100.png/ff4444/ffffff', 7, 45, 4, 140, '7-11 代碼繳費', 'llaughlin5', 'adraycott5@people.com.cn', '2021-10-29', 2, 247, 192),
@@ -1442,7 +1442,8 @@ INSERT INTO `order_status` (`id`, `name`, `descp`, `created_at`) VALUES
 (3, 'paid', '已付款', '2022-02-17'),
 (4, 'refund', '退款中', '2022-02-17'),
 (5, 'refunded', '已退款', '2022-02-17'),
-(6, 'close', '已關閉', '2022-02-17');
+(6, 'close', '已關閉', '2022-02-17'),
+(7, 'mount', '待確認', '2022-03-06');
 
 -- --------------------------------------------------------
 
@@ -1467,7 +1468,8 @@ INSERT INTO `payment_method` (`id`, `name`, `descp`, `created_at`, `valid`) VALU
 (1, 'Apple Pay', 'Apple 支付', '2022-02-17', 1),
 (2, 'Google Pay', 'Google 支付', '2022-02-17', 1),
 (3, 'Line Pay', 'Line 第三方支付', '2022-02-17', 1),
-(4, '7-11', '代碼繳費', '2022-02-17', 1);
+(4, '7-11', '代碼繳費', '2022-02-17', 1),
+(5, 'Credit Card', '信用卡', '2022-03-01', 1);
 
 -- --------------------------------------------------------
 
@@ -1896,7 +1898,7 @@ INSERT INTO `reviews` (`id`, `title`, `content`, `stars`, `img`, `likes`, `creat
 (247, 'mattis odio donec vitae', 'Donec ut mauris eget massa tempor convallis. Nulla neque libero, convallis eget, eleifend luctus, ultricies eu, nibh. Quisque id justo sit amet sapien dignissim vestibulum. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Nulla dapibus dolor vel est.', 5, 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAA', 131, '2021-08-02', 3, 10, 8),
 (248, 'felis sed interdum venenatis', 'Maecenas pulvinar lobortis est. Phasellus sit amet erat. Nulla tempus.', 1, 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAA', 120, '2021-06-19', 3, 85, 50),
 (249, 'tempor convallis nulla', 'Quisque porta volutpat erat. Quisque erat eros, viverra eget, congue eget, semper rutrum, nulla. Nunc purus. Phasellus in felis. Donec semper sapien a libero.', 3, 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAA', 84, '2022-02-18', 2, 240, 42),
-(250, 'lobortis vel dapibus at diam', 'Suspendisse ornare consequat lectus. In est risus, auctor sed, tristique in, tempus sit amet, sem. Fusce consequat. Nulla nisl.', 5, 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAA', 41, '2021-08-18', 2, 235, 13);
+(250, 'lobortis vel dapibus at diam', 'Suspendisse ornare consequat lectus. In est risus, auctor sed, tristique in, tempus sit amet, sem. Fusce consequat. Nulla nisl.', 5, 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAA', 41, '2021-08-18', 2, 235, 13),
 
 -- --------------------------------------------------------
 
@@ -2409,13 +2411,13 @@ ALTER TABLE `order_detail`
 -- AUTO_INCREMENT for table `order_status`
 --
 ALTER TABLE `order_status`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `payment_method`
 --
 ALTER TABLE `payment_method`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `products`
@@ -2445,7 +2447,7 @@ ALTER TABLE `product_tag`
 -- AUTO_INCREMENT for table `reviews`
 --
 ALTER TABLE `reviews`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=251;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=253;
 
 --
 -- AUTO_INCREMENT for table `review_status`
