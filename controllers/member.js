@@ -169,8 +169,8 @@ const getUpdateDetail = async (req, res, next) => {
     try {
         //更新 DB
         const [data, fields] = await connection.execute(
-            'UPDATE reviews SET stars = ? ,title = ? ,content = ?, img = ?, edited_at = ?, review_status_id = 4 WHERE id = ?',
-            [stars, title, content, `uploads/reviews/r-${rid}`, editDate, rid]
+            'UPDATE reviews SET stars = ? ,title = ? ,content = ?, img = ?, review_status_id = 4 WHERE id = ?',
+            [stars, title, content, `uploads/reviews/r-${rid}`, rid]
         );
         res.json({ message: 200 });
     } catch (err) {
