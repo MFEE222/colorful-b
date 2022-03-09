@@ -42,10 +42,10 @@ const upload = multer({
             cb(null, true);
         }
     },
-    limits: {
-        // 200K
-        fileSize: 1000 * 1024,
-    },
+    // limits: {
+    //     // 200K
+    //     fileSize: 1000 * 1024,
+    // },
 });
 
 //(個人頁照片) 上傳路徑、命名規則
@@ -81,10 +81,10 @@ const uploader = multer({
             cb(null, true);
         }
     },
-    limits: {
-        // 200K
-        fileSize: 1000 * 1024,
-    },
+    // limits: {
+    //     // 200K
+    //     fileSize: 1000 * 1024,
+    // },
 });
 //(評論多張)
 router.post(

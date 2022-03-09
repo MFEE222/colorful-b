@@ -59,7 +59,6 @@ const getReviewDetail = async (req, res, next) => {
                 reviews.stars,
                 reviews.img,
                 reviews.likes,
-                reviews.edited_at,
                 reviews.user_id,
                 reviews.product_id,
                 users.name,
