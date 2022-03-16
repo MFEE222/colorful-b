@@ -48,6 +48,11 @@ app.use(expressSession);
 app.get('/', function (req, res, next) {
     res.sendFile(path.join(__dirname, 'routes/aws.html'));
 });
+app.get('/api/test', function (req, res, next) {
+    res.json({
+        message: 'api cors 測試'
+    });
+});
 app.use('/api/auth', authRouter);
 app.use('/api/cart', cartRouter);
 app.use('/api/home', homeRouter);
