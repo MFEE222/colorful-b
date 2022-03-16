@@ -46,7 +46,7 @@ app.use(expressSession);
 
 // 路由中間件
 app.get('/', function (req, res, next) {
-    res.sendFile(path.join(__dirname, 'try/aws.html'));
+    res.sendFile(path.join(__dirname, 'routes/aws.html'));
 });
 app.use('/api/auth', authRouter);
 app.use('/api/cart', cartRouter);
