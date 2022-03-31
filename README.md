@@ -69,7 +69,7 @@ colorful-b
 
 3. 套件安裝
 
-        `$ npm i`
+        $ npm i
 
 4. .env 環境建置
 
@@ -77,28 +77,47 @@ colorful-b
 
 5. 資料庫啟動 
 
+    此處介紹 CLI 的設定方式，也可透過其他 GUI 介面來設定（如：PHPMyAdmin）
+
     5.1 將 `mysqld` 服務運行起來
 
-        `$ mysqld`
+        $ mysqld
 
     5.2 進入 `mysql` CLI 介面
 
-        `$ mysql`
+        $ mysql
     
-    5.3 註冊使用者
+    5.3 註冊使用者帳密、設定權限
 
-        使用者的資料庫權限需要全開
+        $ MariaDB [(none)] > CREATE USER 'your-user-name'@'localhost' IDENTIFIED BY 'your-user-password';
 
-        > `$ mysql `
+        $ MariaDB [(none)] > GRANT ALL ON flamboyant.* TO 'your-user-name'@localhost;
+
+        # 使用者必須和 .env 中的設定一致
+
+        $ MariaDB [(none)] > SELECT user, host FROM mysql.user;
+
+        # 確認使用者建立成功
 
     5.4 匯入資料庫
-        
+
+        $ MariaDB [(none)] > source 'colorful-b/database/flamboyant.sql'
+
+        # .sql 檔案路徑請依據自身專案放置位置調整
+
+        $ MariaDB [(none)] > show databases;
+
+        # 確認資料庫成功匯入
+
+    5.5 離開 CLI 介面
+
+        $ MariaDB [(none)] > exit;
 
 6. 後端啟動
 
-    > `$ npm start`
+        $ npm start
 
-
+        # 確認 server 運行在 .env 指定端口
 
 ## 開發流程
 
