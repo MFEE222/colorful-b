@@ -2,8 +2,103 @@
 
 ## 後端 API 路由
 
-
 ## 專案結構
+
+```
+colorful-b
+|
+|-- bin/                # 執行檔，網站伺服器啟動檔 www 放置在此
+|
+|-- controllers/        # 業務邏輯接口
+|
+|-- database/           # 資料庫 .sql (給 git 整合)
+|
+|-- dng/                # 商品檔 (LightRoom .dng 濾鏡檔)
+|
+|-- download/           # 商品包壓縮檔 (快取客戶端下載過壓縮包)
+|
+|-- middlewares/        # 業務邏輯模組化、重構代碼
+|
+|-- node_modules/       # 套件
+|
+|-- public/             # 靜態資源服務
+|
+|-- routes/             # API 路由
+|
+|-- sessions/           # Session 檔案
+|
+|-- tool/               # 各種小工具 (資料庫模擬資料生成、修改、刪除...)
+|
+|-- utils/              # API 路由共用工具
+|
+|-- views/              # 頁面顯示，放 .pug 檔 (此專案用不到)
+|
+|-- app.js              # 主應用程式入口
+|
+|-- .env.example        # 專案 .env 建立指引
+|
+|-- .gitignore          # git 忽略檔案清單
+|
+|-- .prettierrc         # 專案代碼風格設定檔
+|
+|-- nodemon.json        # nodemon 套件設定檔
+|
+|-- package-lock.json   # 套件相依清單
+|
+|-- package.json        # 套件清單
+|
+|-- README.md           # 專案說明
+
+```
+
+## 如何啟動專案？
+
+1. 確認電腦環境
+    - git 版本: Mac `2.34.1`
+    - nvm 版本: `0.39.1`
+    - node 版本: `16.13.2`
+    - mariadb 版本: `10.7.3`
+
+2. 下載專案
+
+        $ git clone https://github.com/MFEE222/colorful-b.git
+
+    or
+
+        $ git clone git@github.com:MFEE222/colorful-b.git
+
+3. 套件安裝
+
+        `$ npm i`
+
+4. .env 環境建置
+
+    依照 .env.example 建立
+
+5. 資料庫啟動 
+
+    5.1 將 `mysqld` 服務運行起來
+
+        `$ mysqld`
+
+    5.2 進入 `mysql` CLI 介面
+
+        `$ mysql`
+    
+    5.3 註冊使用者
+
+        使用者的資料庫權限需要全開
+
+        > `$ mysql `
+
+    5.4 匯入資料庫
+        
+
+6. 後端啟動
+
+    > `$ npm start`
+
+
 
 ## 開發流程
 
