@@ -181,11 +181,12 @@ const getUpdateDetail = async (req, res, next) => {
 //更新 users
 const getProfile = async (req, res, next) => {
     const { uid } = req.query;
-    const { name, birthDay, phone, email } = req.body;
+    const { name, birthday, phone, email } = req.body;
+    console.log('123req.body :>> ', req.body);
     try {
         const [data, fields] = await connection.execute(
             'UPDATE users SET name=?, birthday=?, phone=?, email=? ,figure=? WHERE id=?',
-            [name, birthDay, phone, email, `uploads/profile/u-${uid}`, uid]
+            [name, birthday, phone, email, `uploads/profile/u-${uid}`, uid]
         );
         res.json({ message: 200 });
     } catch (err) {
