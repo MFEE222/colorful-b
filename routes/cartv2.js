@@ -8,18 +8,25 @@ require('dotenv').config();
 const moment = require('moment');
 const { default: validator } = require('validator');
 
-// API_GET_CART
-router.get('/', async function (req, res, next) {
-    const { userID, orderBy, limit, offset } = req.query;
+// Check Identity
+router.use('/', function (req, res, next) {
+    const { userID } = req.query;
     const { user } = req.session;
 
-    // if (!validator.isInt(userID) || userID != user.id) {
+    // if (userID === undefined || user === undefined ||
+    //     !validator.isInt(userID) || userID != user.id) {
     //     res.status(400).end();
     //     return;
     // }
 
-    // console.log('validator.isEmpty(limit) :>> ', validator.isEmpty(limit));
-    console.log('limit === undefined :>> ', limit === undefined);
+    next();
+});
+
+// API_CART_GET
+router.get('/', async function (req, res, next) {
+    const { userID, orderBy, limit, offset } = req.query;
+    const { user } = req.session;
+
     try {
 
         const select = knex
@@ -54,5 +61,54 @@ router.get('/', async function (req, res, next) {
     }
 });
 
+// API_CART_POST
+router.post('/', async function (req, res, next) {
+    const { userID, action } = req.body;
+    const { user } = req.session;
+
+    if (action === undefined || !validator.isJSON(action)) {
+        res.status(400).end();
+        return;
+    }
+
+    // console.log('userID :>> ', userID);
+    // console.log('action :>> ', action);
+
+    try {
+        const { method, productID } = JSON.parse(action);
+
+        switch (method) {
+            case 'delete':
+                const del = knex('cart').where({ 'user_id': userID, 'product_id': productID }).del();
+
+                // console.log('del.toSQL().sql :>> ', del.toSQL().sql);
+                del.then(rows => {
+                    res.json(rows);
+                });
+
+                return;
+
+            case 'insert':
+                const ins = knex('cart').insert({
+                    'created_at': moment().format('YYYY-MM-DD'),
+                    'product_id': productID,
+                    'user_id': userID,
+                    'valid': 1
+                });
+
+                // console.log('ins.toSQL().sql :>> ', ins.toSQL().sql);
+
+                ins.then(rows => {
+                    res.json(rows);
+                });
+                return;
+            default:
+                res.status(400).end();
+                return;
+        }
+    } catch (err) {
+        console.log('err :>> ', err);
+    }
+});
 
 module.exports = router;
