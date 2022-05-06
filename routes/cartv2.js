@@ -79,28 +79,40 @@ router.post('/', async function (req, res, next) {
 
         switch (method) {
             case 'delete':
-                const del = knex('cart').where({ 'user_id': userID, 'product_id': productID }).del();
+                const del = knex('cart').where('user_id', userID).del();
+
+                (validator.isJSON(productID))
+                    ? del.whereIn('product_id', JSON.parse(productID))
+                    : del.where('product_id', productID);
 
                 // console.log('del.toSQL().sql :>> ', del.toSQL().sql);
+
                 del.then(rows => {
                     res.json(rows);
                 });
-
                 return;
 
             case 'insert':
-                const ins = knex('cart').insert({
-                    'created_at': moment().format('YYYY-MM-DD'),
-                    'product_id': productID,
-                    'user_id': userID,
-                    'valid': 1
-                });
-
-                // console.log('ins.toSQL().sql :>> ', ins.toSQL().sql);
-
-                ins.then(rows => {
-                    res.json(rows);
-                });
+                knex
+                    .select('product_id')
+                    .from('cart')
+                    .where('user_id', userID)
+                    .then(rows => {
+                        if (rows.some(ele => ele.product_id == productID)) {
+                            res.status(200).end();
+                        } else {
+                            knex('cart')
+                                .insert({
+                                    'created_at': moment().format('YYYY-MM-DD'),
+                                    'product_id': productID,
+                                    'user_id': userID,
+                                    'valid': 1
+                                })
+                                .then(rows => {
+                                    res.json(rows);
+                                });
+                        }
+                    });
                 return;
             default:
                 res.status(400).end();
