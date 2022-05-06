@@ -13,11 +13,11 @@ router.use('/', function (req, res, next) {
     const { userID } = req.query;
     const { user } = req.session;
 
-    // if (userID === undefined || user === undefined ||
-    //     !validator.isInt(userID) || userID != user.id) {
-    //     res.status(400).end();
-    //     return;
-    // }
+    if (userID === undefined || user === undefined ||
+        !validator.isInt(userID) || userID != user.id) {
+        res.status(400).end();
+        return;
+    }
 
     next();
 });
