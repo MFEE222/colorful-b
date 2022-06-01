@@ -1,0 +1,28 @@
+
+### health check for AWS ELB
+GET http://localhost:3003/health
+
+
+### auth
+GET http://localhost:3003/api/auth
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiZmlzaGJveTE5MCIsImVtYWlsIjoiZmlzaGJveTE5MEBnbWFpbC5jb20iLCJpYXQiOjE2NTQxMTIyMjUsImV4cCI6MTY1NDExMjI1NX0.eFcFxUeXNjlHN0AL5CqVC5RJ_WsJPmNnPb10YdklG14
+
+### token
+POST http://localhost:3003/api/auth/token
+Content-Type: application/json
+
+{
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiZmlzaGJveTE5MCIsImVtYWlsIjoiZmlzaGJveTE5MEBnbWFpbC5jb20iLCJpYXQiOjE2NTQxMTI4OTl9.HunHSlnCH7RI3WJssBMhXygGIwOtlySiPv3Wver8e-A"
+}
+
+### login
+POST http://localhost:3003/api/auth/login
+Content-Type: application/json
+
+{
+    "account": "fishboy190@gmail.com",
+    "password": "blabla"
+}
+
+###
+DELETE http://localhost:3003/logout
