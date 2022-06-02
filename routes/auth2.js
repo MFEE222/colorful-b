@@ -4,20 +4,19 @@ const argon2 = require('argon2');
 const jwt = require('jsonwebtoken');
 const knex = require('../utils/knex');
 
-// login -> get profile from db -> generate access token and refresh token
 
-// logout -> get profile frome db -> remove refresh token
-
-// auth 
+// auth
+// -> verify access_token and get payload (user)
+// -> compare payload(user) to row of database
+// -> response
 router.get('/', authenticateToken, async function (req, res) {
     const { user } = req;
     // check user profile in db
-    console.log(9413);
     try {
-        const rows = knex.select()
-            .from('user')
+        const rows = await knex.select()
+            .from('users')
             .where('email', user.email);
-
+        // console.log('rows :>> ', rows);
         if (rows.length == 0) {
             throw new Error;
         }
@@ -30,7 +29,15 @@ router.get('/', authenticateToken, async function (req, res) {
     }
 });
 
+// register
+router.post('/register', async function (req, res) {
+
+});
+
 // token
+// -> verify refresh_token and get payload(user)
+// -> compare refresh_token between with database
+// -> response
 router.post('/token', async function (req, res) {
     // check arg validation
     const { token } = req.body;
@@ -68,6 +75,10 @@ router.post('/token', async function (req, res) {
 
 
 // login
+// -> verify account and password (argon2)
+// -> generate access_token and refresh_token
+// -> update refresh_token on user of database
+// -> response
 router.post('/login', async function (req, res) {
     const { account, password } = req.body;
     // console.log('account :>> ', account);
@@ -109,6 +120,30 @@ router.post('/login', async function (req, res) {
 
 });
 
+// logout
+// -> remove user's refresh_token in database
+// -> response
+router.delete('/logout', async function (req, res) {
+    const { token } = req.body;
+    if (!token) {
+        return res.sendStatus(401);
+    }
+
+    try {
+        const update_result = await knex('users')
+            .where('refresh_token', token)
+            .update('refresh_token', '');
+        console.log('update_result :>> ', update_result);
+        if (update_result != 1) {
+            throw new Error;
+        }
+
+        return res.sendStatus(204);
+    } catch (err) {
+        console.log('error :>>', err);
+        return res.sendStatus(403);
+    }
+});
 
 // middleware
 function authenticateToken(req, res, next) {
@@ -136,7 +171,5 @@ function generateRefreshToken(payload) {
     // console.log('process.env.REFRESH_TOKEN_SECRET :>> ', process.env.REFRESH_TOKEN_SECRET);
     return jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET);
 }
-
-
 
 module.exports = router;

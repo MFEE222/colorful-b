@@ -1,0 +1,47 @@
+
+### register 
+POST http://localhost:3003/api/auth/register
+Content-Type: application/json
+
+{
+    "account":
+    "password":
+    "hint":
+}
+
+### auth
+### -> paste access_token behind the 'Bearer' with space.
+### -> response 200 or 401/403
+GET http://localhost:3003/api/auth
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiZmlzaGJveTE5MCIsImVtYWlsIjoiZmlzaGJveTE5MEBnbWFpbC5jb20iLCJpYXQiOjE2NTQxODM5OTksImV4cCI6MTY1NDE4NDAxOX0.4Hb9Om9MZFl1V0NpBEZ3SL6clPBR5R3owghrchSjSp8
+
+### token
+### -> paste refresh_token behind the 'token' with quotes.
+### -> response 'access_token' or 401/403
+POST http://localhost:3003/api/auth/token
+Content-Type: application/json
+
+{
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiZmlzaGJveTE5MCIsImVtYWlsIjoiZmlzaGJveTE5MEBnbWFpbC5jb20iLCJpYXQiOjE2NTQxODMwMjl9.xzmeV1sbN42fyfUufizXxFQDIoF0YtSW2XnYQ1hAYtw"
+}
+
+### login
+### -> paste 'account' and 'password' which already existed in database
+### -> response 'access_token' and 'refresh_token'
+POST http://localhost:3003/api/auth/login
+Content-Type: application/json
+
+{
+    "account": "fishboy190@gmail.com",
+    "password": "blabla"
+}
+
+### logout
+### -> paste 'refresh_token' behind the 'token'
+### -> response 204 or 401/403
+DELETE http://localhost:3003/api/auth/logout
+Content-Type: application/json
+
+{
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiZmlzaGJveTE5MCIsImVtYWlsIjoiZmlzaGJveTE5MEBnbWFpbC5jb20iLCJpYXQiOjE2NTQxODMwMjl9.xzmeV1sbN42fyfUufizXxFQDIoF0YtSW2XnYQ1hAYtw"
+}
