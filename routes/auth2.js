@@ -9,24 +9,61 @@ const knex = require('../utils/knex');
 // logout -> get profile frome db -> remove refresh token
 
 // auth 
-router.get('/auth', authenticateToken, async function (req, res) {
+router.get('/', authenticateToken, async function (req, res) {
     const { user } = req;
-    knex.select()
-        .from(user)
-        .where('email', user.email)
-        .then(rows => {
-            rows.forEach(function (row) {
-                return res.json({
-                    name: row.name,
+    // check user profile in db
+    console.log(9413);
+    try {
+        const rows = knex.select()
+            .from('user')
+            .where('email', user.email);
 
-                })
-            });
-        });
+        if (rows.length == 0) {
+            throw new Error;
+        }
+
+        return res.sendStatus(200);
+
+    } catch (err) {
+        console.log('error :>>', err);
+        return res.sendStatus(403);
+    }
 });
 
 // token
-router.post('/token', function (req, res) {
+router.post('/token', async function (req, res) {
+    // check arg validation
+    const { token } = req.body;
+    if (!token) {
+        return res.sendStatus(401);
+    }
+    // verify
+    jwt.verify(token, process.env.REFRESH_TOKEN_SECRET, async (err, user) => {
+        if (err) return res.sendStatus(403);
 
+        try {
+
+            const rows = await knex.select()
+                .from('users')
+                .where('email', user.email);
+
+            if (rows.length == 0) {
+                throw new Error;
+            }
+            const row = rows[0];
+            // console.log('row.refresh_token :>> ', row.refresh_token);
+            if (row.refresh_token != token) {
+                throw new Error;
+            }
+
+            // return new access token
+            return res.json({ access_token: generateAccessToken({ name: user.name, email: user.email }) });
+
+        } catch (err) {
+            console.log('err :>> ', err);
+            return res.sendStatus(403);
+        }
+    });
 });
 
 
@@ -70,7 +107,6 @@ router.post('/login', async function (req, res) {
         return res.sendStatus(403);
     }
 
-    // return res.status(200).send('final');
 });
 
 
@@ -82,7 +118,7 @@ function authenticateToken(req, res, next) {
 
     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
         if (err) return res.sendStatus(403);
-        // console.log('user :>> ', user);
+        console.log('user :>> ', user);
         req.user = user;
         next();
         // for test
@@ -92,12 +128,12 @@ function authenticateToken(req, res, next) {
 
 // function
 function generateAccessToken(payload) {
-    console.log('process.env.ACCESS_TOKEN_SECRET :>> ', process.env.ACCESS_TOKEN_SECRET);
-    return jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '30s' });
+    // console.log('process.env.ACCESS_TOKEN_SECRET :>> ', process.env.ACCESS_TOKEN_SECRET);
+    return jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '20s' });
 }
 
 function generateRefreshToken(payload) {
-    console.log('process.env.REFRESH_TOKEN_SECRET :>> ', process.env.REFRESH_TOKEN_SECRET);
+    // console.log('process.env.REFRESH_TOKEN_SECRET :>> ', process.env.REFRESH_TOKEN_SECRET);
     return jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET);
 }
 

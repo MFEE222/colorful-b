@@ -5,14 +5,13 @@ GET http://localhost:3003/health
 
 ### auth
 GET http://localhost:3003/api/auth
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiZmlzaGJveTE5MCIsImVtYWlsIjoiZmlzaGJveTE5MEBnbWFpbC5jb20iLCJpYXQiOjE2NTQxMTIyMjUsImV4cCI6MTY1NDExMjI1NX0.eFcFxUeXNjlHN0AL5CqVC5RJ_WsJPmNnPb10YdklG14
-
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiZmlzaGJveTE5MCIsImVtYWlsIjoiZmlzaGJveTE5MEBnbWFpbC5jb20iLCJpYXQiOjE2NTQxNzA2MzAsImV4cCI6MTY1NDE3MDY1MH0.8Hs0UTKgb8Ukuiqfudraib3i4uHc1mPwGeZR0TR6nzE
 ### token
 POST http://localhost:3003/api/auth/token
 Content-Type: application/json
 
 {
-    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiZmlzaGJveTE5MCIsImVtYWlsIjoiZmlzaGJveTE5MEBnbWFpbC5jb20iLCJpYXQiOjE2NTQxMTI4OTl9.HunHSlnCH7RI3WJssBMhXygGIwOtlySiPv3Wver8e-A"
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiZmlzaGJveTE5MCIsImVtYWlsIjoiZmlzaGJveTE5MEBnbWFpbC5jb20iLCJpYXQiOjE2NTQxNzA1Njl9.8-K4is3PzjZL6rnI9ILOH8YwyjQvItxNX-YiMBvAuS0"
 }
 
 ### login
