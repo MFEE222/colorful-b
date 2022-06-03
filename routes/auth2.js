@@ -3,7 +3,8 @@ const router = express.Router();
 const argon2 = require('argon2');
 const jwt = require('jsonwebtoken');
 const knex = require('../utils/knex');
-
+const { default: validator } = require('validator');
+const { Base64 } = require('js-base64');
 
 // auth
 // -> verify access_token and get payload (user)
@@ -29,10 +30,108 @@ router.get('/', authenticateToken, async function (req, res) {
     }
 });
 
-// register
-router.post('/register', async function (req, res) {
+// sign up
+router.post('/signup', async function (req, res) {
+    const { name, account, password, confirm_password, hint } = req.body;
+
+    // validate
+    if (!name || !account || !password || !confirm_password) {
+        return res.sendStatus(401);
+    }
+    if (!validator.isLength(name, { min: 1 })) {
+        return res.sendStatus(401);
+    }
+    if (!validator.isEmail(account)) {
+        return res.sendStatus(401);
+    }
+    if (!validator.isLength(password, { min: 8, max: 30 }) ||
+        !validator.equals(password, confirm_password)) {
+        return res.sendStatus(401);
+    }
+    if (!validator.isLength(hint, { min: 0, max: 10 })) {
+        return res.sendStatus(401);
+    }
+    // is existed in db ?
+    try {
+        const rows = knex.select()
+            .from('users')
+            .where('email', account);
+        // already register
+        if (rows.length < 1) {
+            return res.sendStatus(403);
+        }
+    } catch (err) {
+        console.log('error :>>', err);
+    }
+
+    // hash
+    const hash_password = await argon2.hash(password);
+    const hash_hint = await argon2.hash(hint);
+    console.log('hash_password.length :>> ', hash_password.length);
+    console.log('hash_hint.length :>> ', hash_hint.length);
+
+    // store to db
+    try {
+        const insert = await knex('users')
+            .insert({
+                name: name,
+                account: account,
+                email: account,
+                password: hash_password,
+                password_hint: hash_hint,
+                registered: 0,
+            });
+        // console.log('insert :>> ', insert);
+        if (insert.length < 1) {
+            return res.sendStatus(403);
+        }
+
+    } catch (err) {
+        console.log('error :>>', err);
+    }
+
+    // email verify
+    const user = JSON.stringify({ email: account });
+    const encoded = Base64.encode(user);
+    const url = 'http://localhost:3003/api/auth/signup/' + encoded;
+    // send email
+    return res.send(url);
+
+    // response
+    return res.sendStatus(200);
+});
+
+router.get('/signup/:base64', async function (req, res) {
+    const { base64 } = req.params;
+    // console.log('base64 :>> ', base64);
+
+    // console.log('validator.isBase64(base64) :>> ', validator.isBase64(base64));
+    if (!validator.isBase64(base64)) {
+        return res.sendStatus(401);
+    }
+
+    const { email } = JSON.parse(Base64.decode(base64));
+    if (!validator.isEmail(email)) {
+        return res.sendStatus(401);
+    }
+
+    // update db
+    try {
+        const update = await knex('users')
+            .where('email', email)
+            .update('registered', 1);
+        console.log('update :>> ', update);
+        if (update < 1) {
+            return res.sendStatus(403);
+        }
+
+        return res.sendStatus(200);
+    } catch (err) {
+        console.log('error :>>', err);
+    }
 
 });
+
 
 // token
 // -> verify refresh_token and get payload(user)
@@ -74,12 +173,12 @@ router.post('/token', async function (req, res) {
 });
 
 
-// login
+// sign in
 // -> verify account and password (argon2)
 // -> generate access_token and refresh_token
 // -> update refresh_token on user of database
 // -> response
-router.post('/login', async function (req, res) {
+router.post('/signin', async function (req, res) {
     const { account, password } = req.body;
     // console.log('account :>> ', account);
     // console.log('password :>> ', password);
@@ -98,6 +197,14 @@ router.post('/login', async function (req, res) {
         }
 
         const user = rows[0];
+
+        // unverify email
+        // console.log('user.registered :>> ', user.registered);
+        if (!user.registered) {
+            return res.sendStatus(403);
+        }
+
+        // confirm password
         if (await argon2.verify(user.password, password)) {
             // generate token
             const access_token = generateAccessToken({ name: user.name, email: user.email });
@@ -120,10 +227,10 @@ router.post('/login', async function (req, res) {
 
 });
 
-// logout
+// sign out
 // -> remove user's refresh_token in database
 // -> response
-router.delete('/logout', async function (req, res) {
+router.delete('/signout', async function (req, res) {
     const { token } = req.body;
     if (!token) {
         return res.sendStatus(401);

@@ -1,13 +1,19 @@
 
-### register 
-POST http://localhost:3003/api/auth/register
+### sign up 
+POST http://localhost:3003/api/auth/signup
 Content-Type: application/json
 
 {
-    "account":
-    "password":
-    "hint":
+    "name": "liz",
+    "account": "liz@gmail.com",
+    "password": "liz1234567",
+    "confirm_password": "liz1234567",
+    "hint": "already"
 }
+
+### verify sign up
+GET http://localhost:3003/api/auth/signup/eyJlbWFpbCI6ImxpekBnbWFpbC5jb20ifQ==
+Content-Type: application/json
 
 ### auth
 ### -> paste access_token behind the 'Bearer' with space.
@@ -25,10 +31,10 @@ Content-Type: application/json
     "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiZmlzaGJveTE5MCIsImVtYWlsIjoiZmlzaGJveTE5MEBnbWFpbC5jb20iLCJpYXQiOjE2NTQxODMwMjl9.xzmeV1sbN42fyfUufizXxFQDIoF0YtSW2XnYQ1hAYtw"
 }
 
-### login
+### signin
 ### -> paste 'account' and 'password' which already existed in database
 ### -> response 'access_token' and 'refresh_token'
-POST http://localhost:3003/api/auth/login
+POST http://localhost:3003/api/auth/signin
 Content-Type: application/json
 
 {
@@ -36,10 +42,10 @@ Content-Type: application/json
     "password": "blabla"
 }
 
-### logout
+### signout
 ### -> paste 'refresh_token' behind the 'token'
 ### -> response 204 or 401/403
-DELETE http://localhost:3003/api/auth/logout
+DELETE http://localhost:3003/api/auth/signout
 Content-Type: application/json
 
 {
