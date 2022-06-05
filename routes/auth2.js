@@ -5,6 +5,13 @@ const jwt = require('jsonwebtoken');
 const knex = require('../utils/knex');
 const { default: validator } = require('validator');
 const { Base64 } = require('js-base64');
+const AWS = require('aws-sdk');
+const res = require('express/lib/response');
+const path = require('path');
+
+// TODO: How to store refresh token on browser http-only cookie ?
+// TODO: AWS SES
+// TODO: Google-Sign-In
 
 // auth
 // -> verify access_token and get payload (user)
@@ -53,7 +60,7 @@ router.post('/signup', async function (req, res) {
     }
     // is existed in db ?
     try {
-        const rows = knex.select()
+        const rows = await knex.select()
             .from('users')
             .where('email', account);
         // already register
@@ -91,26 +98,40 @@ router.post('/signup', async function (req, res) {
     }
 
     // email verify
-    const user = JSON.stringify({ email: account });
-    const encoded = Base64.encode(user);
-    const url = 'http://localhost:3003/api/auth/signup/' + encoded;
+    // const user = JSON.stringify({ email: account });
+    const user = { email: account };
+    const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '30m' });
+    const url = process.env.AUTH_CONFIRM_EMAIL_URL + token;
     // send email
-    return res.send(url);
-
-    // response
+    const result = await sendVerifyEmail(account, url);
+    if (result instanceof Error) {
+        return res.sendStatus(400);
+    }
+    console.log('result :>> ', result);
+    // success
     return res.sendStatus(200);
 });
 
-router.get('/signup/:base64', async function (req, res) {
-    const { base64 } = req.params;
+router.get('/signup/:token', async function (req, res) {
+    // const { base64 } = req.params;
     // console.log('base64 :>> ', base64);
+    const { token } = req.params;
 
     // console.log('validator.isBase64(base64) :>> ', validator.isBase64(base64));
-    if (!validator.isBase64(base64)) {
-        return res.sendStatus(401);
+    // if (!validator.isBase64(base64)) {
+    //     return res.sendStatus(401);
+    // }
+    let user;
+    try {
+        user = await jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+        console.log('user :>> ', user);
+    } catch (err) {
+        console.log('error :>>', err);
+        return res.sendStatus(403);
     }
 
-    const { email } = JSON.parse(Base64.decode(base64));
+    // const { email } = JSON.parse(Base64.decode(base64));
+    const { email } = user;
     if (!validator.isEmail(email)) {
         return res.sendStatus(401);
     }
@@ -126,6 +147,7 @@ router.get('/signup/:base64', async function (req, res) {
         }
 
         return res.sendStatus(200);
+        // redirect to frontend sign in pages
     } catch (err) {
         console.log('error :>>', err);
     }
@@ -201,6 +223,7 @@ router.post('/signin', async function (req, res) {
         // unverify email
         // console.log('user.registered :>> ', user.registered);
         if (!user.registered) {
+            // tell frontend(user) to verify email
             return res.sendStatus(403);
         }
 
@@ -214,7 +237,7 @@ router.post('/signin', async function (req, res) {
             const update_result = await knex('users')
                 .where('email', user.email)
                 .update('refresh_token', refresh_token);
-            if (update_result != 1) {
+            if (update_result < 1) {
                 throw new Error;
             }
             return res.json({ access_token, refresh_token });
@@ -252,6 +275,99 @@ router.delete('/signout', async function (req, res) {
     }
 });
 
+// forgot password
+router.post('/forgot', async function (req, res) {
+    const { email, hint } = req.body;
+
+    if (!validator.isEmail(email)) {
+        return res.sendStatus(401);
+    }
+
+    // is existed in db
+    try {
+        const rows = await knex.select()
+            .from('users')
+            .where('email', account);
+
+        // already register
+        if (rows.length < 1) {
+            return res.sendStatus(403);
+        }
+    } catch (err) {
+        console.log('error :>>', err);
+    }
+
+    // verify
+    const user = rows[0];
+    if (await argon2.verify(user.password_hint, hint)) {
+        const token = jwt.sign({ email: user.email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '30m' });
+        const url = process.env.AUTH_FORGOT_PASSWORD_URL + token;
+        const result = await sendForgotPasswordEmail(user.email, url);
+
+        if (result instanceof Error) {
+            return res.sendStatus(403);
+        }
+
+        console.log('result :>> ', result);
+    } else {
+        return res.sendStatus(403);
+    }
+});
+
+// TODO: forgot api need redesign
+router.post('/forgot/:token', async function (req, res) {
+    const { token } = req.params;
+    const { new_password, confirm_password } = req.body;
+
+    let user;
+    try {
+        user = await jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+        console.log('user :>> ', user);
+    } catch (err) {
+        console.log('error :>> ', err);
+        return res.sendStatus(403);
+    }
+
+    const { email } = user;
+    try {
+        const rows = await knex.select()
+            .from('users')
+            .where('account', email);
+
+        if (rows.length < 1) {
+            throw new Error;
+        }
+
+        if (!validator.isLength(new_password, { min: 8, max: 30 }) ||
+            !validator.equals(new_password, confirm_password)) {
+            throw new Error;
+        }
+
+        const hash = await argon2.hash(new_password);
+        console.log('hash.length :>> ', hash.length);
+
+        const update = await knex('users')
+            .where('account', email)
+            .update('password', hash);
+
+        if (update < 1) {
+            throw new Error;
+        }
+
+        return res.sendStatus(200);
+
+    } catch (err) {
+        console.log('error :>>', err);
+        return res.sendStatus(403);
+    }
+});
+
+// TODO: reset password
+// reset password
+router.post('/resetpwd', async function (req, res) {
+
+});
+
 // middleware
 function authenticateToken(req, res, next) {
     const authHeader = req.headers['authorization'];
@@ -271,12 +387,99 @@ function authenticateToken(req, res, next) {
 // function
 function generateAccessToken(payload) {
     // console.log('process.env.ACCESS_TOKEN_SECRET :>> ', process.env.ACCESS_TOKEN_SECRET);
-    return jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '20s' });
+    return jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '5m' });
 }
 
 function generateRefreshToken(payload) {
     // console.log('process.env.REFRESH_TOKEN_SECRET :>> ', process.env.REFRESH_TOKEN_SECRET);
     return jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET);
 }
+
+async function sendVerifyEmail(to, url) {
+    // config credential and region from .json
+    AWS.config.loadFromPath(path.join(__dirname, '../config.json'));
+    console.log('AWS.Endpoint :>> ', AWS.Endpoint);
+
+    // create sendEamil params
+    const params = {
+        Destination: {
+            ToAddresses: [
+                to,
+            ]
+        },
+        Message: {
+            Body: {
+                Html: {
+                    Charset: 'UTF-8',
+                    Data: `<h1>Confirm your email address.</h1>
+                        <p>Please click follow verification link to confirm your email in 30 min.</p>
+                        <a href="${url}">${url}</a>`
+                },
+            },
+            Subject: {
+                Charset: 'UTF-8',
+                Data: 'Color4 Me'
+            }
+        },
+        Source: process.env.AWS_SES_SENDER,
+    };
+
+    // create the promise ann ses service object
+    const ses = new AWS.SES({ apiVersion: '2010-12-01' });
+
+    try {
+        const data = await ses.sendEmail(params).promise();
+
+        return data;
+
+    } catch (err) {
+        console.log('error :>>', err);
+        return err;
+    }
+}
+
+async function sendForgotPasswordEmail(to, url) {
+    // config credential and region
+    AWS.config.loadFromPath(path.join(__dirname, '../config.json'));
+
+
+    // create sendEmail params
+    const params = {
+        Destination: {
+            ToAddresses: [
+                to,
+            ]
+        },
+        Message: {
+            Body: {
+                Html: {
+                    Charset: 'UTF-8',
+                    Data: `<h1>Reset your password.</h1>
+                        <p>Please click follow link to reset your password in 30 min.
+                        <a href="${url}">${url}</a>`
+                },
+            },
+            Subject: {
+                Charset: 'UTF-8',
+                Data: 'Color4 Me'
+            }
+        },
+        Source: process.env.AWS_SES_SENDER,
+    };
+
+    // create the promise and ses service object
+    const ses = new AWS.SES({ apiVersion: '2010-12-01' });
+
+    try {
+        const data = await ses.sendEmail(params).promise();
+
+        return data;
+    } catch (err) {
+        console.log('error :>>', err);
+        return err;
+    }
+}
+
+
 
 module.exports = router;
