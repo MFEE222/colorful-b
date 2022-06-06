@@ -64,11 +64,12 @@ router.post('/signup', async function (req, res) {
             .from('users')
             .where('email', account);
         // already register
-        if (rows.length < 1) {
-            return res.sendStatus(403);
+        if (rows.length > 0) {
+            throw new Error;
         }
     } catch (err) {
         console.log('error :>>', err);
+        return res.sendStatus(403);
     }
 
     // hash
@@ -90,11 +91,12 @@ router.post('/signup', async function (req, res) {
             });
         // console.log('insert :>> ', insert);
         if (insert.length < 1) {
-            return res.sendStatus(403);
+            throw new Error;
         }
 
     } catch (err) {
         console.log('error :>>', err);
+        return res.sendStatus(403);
     }
 
     // email verify
@@ -240,7 +242,11 @@ router.post('/signin', async function (req, res) {
             if (update_result < 1) {
                 throw new Error;
             }
-            return res.json({ access_token, refresh_token });
+            // set refresh_token to cookie with http-only
+            // set access_token to in-memory
+            return res
+                .cookie('refresh_token', refresh_token, { secure: true, httpOnly: true })
+                .json({ access_token });
         }
 
     } catch (err) {
@@ -480,6 +486,13 @@ async function sendForgotPasswordEmail(to, url) {
     }
 }
 
+router.get('/http-only', function (req, res) {
+    console.log('req.cookies :>> ', req.cookies);
+
+    // res.clearCookie('access_token');
+    res.cookie('access_token', 123, { expires: new Date(0) });
+    res.cookie('refresh_token', 123, { httpOnly: true }).sendStatus(200);
+});
 
 
 module.exports = router;

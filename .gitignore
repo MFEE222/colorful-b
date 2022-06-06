@@ -4,7 +4,7 @@ tmp.*
 config.json
 dist
 .DS_Store
-.rest
+*.rest
 
 /sessions
 /public/images/
