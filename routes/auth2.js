@@ -135,7 +135,7 @@ router.get('/signup/:token', async function (req, res) {
     // const { email } = JSON.parse(Base64.decode(base64));
     const { email } = user;
     if (!validator.isEmail(email)) {
-        return res.sendStatus(401);
+        return res.sendStatus(403);
     }
 
     // update db
@@ -161,14 +161,18 @@ router.get('/signup/:token', async function (req, res) {
 // -> verify refresh_token and get payload(user)
 // -> compare refresh_token between with database
 // -> response
-router.post('/token', async function (req, res) {
+// router.post('/token', async function (req, res) {
+router.get('/token', async function (req, res) {
     // check arg validation
-    const { token } = req.body;
-    if (!token) {
+    // const { token } = req.body;
+    const { refresh_token } = req.cookies;
+    console.log('refresh_token :>> ', refresh_token);
+
+    if (!refresh_token) {
         return res.sendStatus(401);
     }
     // verify
-    jwt.verify(token, process.env.REFRESH_TOKEN_SECRET, async (err, user) => {
+    jwt.verify(refresh_token, process.env.REFRESH_TOKEN_SECRET, async (err, user) => {
         if (err) return res.sendStatus(403);
 
         try {
@@ -182,7 +186,7 @@ router.post('/token', async function (req, res) {
             }
             const row = rows[0];
             // console.log('row.refresh_token :>> ', row.refresh_token);
-            if (row.refresh_token != token) {
+            if (row.refresh_token != refresh_token) {
                 throw new Error;
             }
 
@@ -260,21 +264,25 @@ router.post('/signin', async function (req, res) {
 // -> remove user's refresh_token in database
 // -> response
 router.delete('/signout', async function (req, res) {
-    const { token } = req.body;
-    if (!token) {
+    // const { token } = req.body;
+    const { refresh_token } = req.cookies;
+
+    if (!refresh_token) {
         return res.sendStatus(401);
     }
 
     try {
         const update_result = await knex('users')
-            .where('refresh_token', token)
+            .where('refresh_token', refresh_token)
             .update('refresh_token', '');
         console.log('update_result :>> ', update_result);
+
         if (update_result != 1) {
             throw new Error;
         }
-
-        return res.sendStatus(204);
+        return res
+            .clearCookie('refresh_token')
+            .sendStatus(204);
     } catch (err) {
         console.log('error :>>', err);
         return res.sendStatus(403);
