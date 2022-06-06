@@ -323,12 +323,29 @@ router.post('/forgot', async function (req, res) {
         }
 
         console.log('result :>> ', result);
+        return res.sendStatus(200);
     } else {
         return res.sendStatus(403);
     }
 });
 
-// TODO: forgot api need redesign
+// SSR: return reset password page for user forgot password
+router.get('/forgot/:token', async function (req, res) {
+    const { token } = req.params;
+
+    // let user;
+    // try {
+    //     user = await jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+    //     console.log('user :>> ', user);
+    // } catch (err) {
+    //     console.log('error :>>', err);
+    //     return res.sendStatus(404);
+    // }
+
+    return res.render('forgot', { to: process.env.AUTH_FORGOT_PASSWORD_URL + token });
+});
+
+// reset user password
 router.post('/forgot/:token', async function (req, res) {
     const { token } = req.params;
     const { new_password, confirm_password } = req.body;
@@ -494,13 +511,16 @@ async function sendForgotPasswordEmail(to, url) {
     }
 }
 
-router.get('/http-only', function (req, res) {
-    console.log('req.cookies :>> ', req.cookies);
 
-    // res.clearCookie('access_token');
-    res.cookie('access_token', 123, { expires: new Date(0) });
-    res.cookie('refresh_token', 123, { httpOnly: true }).sendStatus(200);
-});
+// router.get('/env', (req, res) => {
+//     console.log('process.env.ACCESS_TOKEN_SECRET :>> ', process.env.ACCESS_TOKEN_SECRET);
+//     console.log('process.env.REFRESH_TOKEN_SECRET :>> ', process.env.REFRESH_TOKEN_SECRET);
+//     console.log('process.env.PRODUCTION_URL :>> ', process.env.PRODUCTION_URL);
+//     console.log('process.env.AWS_SES_SENDER :>> ', process.env.AWS_SES_SENDER);
+//     console.log('process.env.AUTH_CONFIRM_EMAIL_URL :>> ', process.env.AUTH_CONFIRM_EMAIL_URL);
+//     console.log('process.env.AUTH_FORGOT_PASSWORD_URL :>> ', process.env.AUTH_FORGOT_PASSWORD_URL);
 
+//     res.sendStatus(200);
+// });
 
 module.exports = router;
