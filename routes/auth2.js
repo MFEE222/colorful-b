@@ -333,14 +333,14 @@ router.post('/forgot', async function (req, res) {
 router.get('/forgot/:token', async function (req, res) {
     const { token } = req.params;
 
-    // let user;
-    // try {
-    //     user = await jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-    //     console.log('user :>> ', user);
-    // } catch (err) {
-    //     console.log('error :>>', err);
-    //     return res.sendStatus(404);
-    // }
+    let user;
+    try {
+        user = await jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+        console.log('user :>> ', user);
+    } catch (err) {
+        console.log('error :>>', err);
+        return res.sendStatus(404);
+    }
 
     return res.render('forgot', { to: process.env.AUTH_FORGOT_PASSWORD_URL + token });
 });
