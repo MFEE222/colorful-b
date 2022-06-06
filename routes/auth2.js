@@ -523,4 +523,10 @@ async function sendForgotPasswordEmail(to, url) {
 //     res.sendStatus(200);
 // });
 
+// router.get('/forgot-view', async function (req, res) {
+
+
+//     return res.render('forgot', { to: process.env.AUTH_FORGOT_PASSWORD_URL + 'view' });
+// });
+
 module.exports = router;
