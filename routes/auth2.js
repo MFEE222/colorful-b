@@ -13,6 +13,11 @@ const path = require('path');
 // TODO: AWS SES
 // TODO: Google-Sign-In
 
+// health
+router.use('/health', function (req, res) {
+    return res.sendStatus(200);
+});
+
 // auth
 // -> verify access_token and get payload (user)
 // -> compare payload(user) to row of database
@@ -301,32 +306,33 @@ router.post('/forgot', async function (req, res) {
     try {
         const rows = await knex.select()
             .from('users')
-            .where('email', account);
+            .where('email', email);
 
         // already register
         if (rows.length < 1) {
+            return res.sendStatus(403);
+        }
+
+        // verify
+        const user = rows[0];
+        if (await argon2.verify(user.password_hint, hint)) {
+            const token = jwt.sign({ email: user.email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '30m' });
+            const url = process.env.AUTH_FORGOT_PASSWORD_URL + token;
+            const result = await sendForgotPasswordEmail(user.email, url);
+
+            if (result instanceof Error) {
+                return res.sendStatus(403);
+            }
+
+            console.log('result :>> ', result);
+            return res.sendStatus(200);
+        } else {
             return res.sendStatus(403);
         }
     } catch (err) {
         console.log('error :>>', err);
     }
 
-    // verify
-    const user = rows[0];
-    if (await argon2.verify(user.password_hint, hint)) {
-        const token = jwt.sign({ email: user.email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '30m' });
-        const url = process.env.AUTH_FORGOT_PASSWORD_URL + token;
-        const result = await sendForgotPasswordEmail(user.email, url);
-
-        if (result instanceof Error) {
-            return res.sendStatus(403);
-        }
-
-        console.log('result :>> ', result);
-        return res.sendStatus(200);
-    } else {
-        return res.sendStatus(403);
-    }
 });
 
 // SSR: return reset password page for user forgot password
