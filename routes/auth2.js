@@ -8,6 +8,7 @@ const { Base64 } = require('js-base64');
 const AWS = require('aws-sdk');
 const res = require('express/lib/response');
 const path = require('path');
+require('dotenv').config();
 
 // TODO: How to store refresh token on browser http-only cookie ?
 // TODO: AWS SES
@@ -15,7 +16,11 @@ const path = require('path');
 
 // health
 router.use('/health', function (req, res) {
-    return res.sendStatus(200);
+    // req.session['health'] = 'OK';
+
+    return res
+        .cookie('health', 'OK', { secure: process.env.COOKIES_SECURE, httpOnly: process.env.COOKIES_HTTPONLY })
+        .sendStatus(200);
 });
 
 // auth
@@ -163,6 +168,7 @@ router.get('/signup/:token', async function (req, res) {
 
 
 // token
+// FIXME: How to fix user frequently request new access token?
 // -> verify refresh_token and get payload(user)
 // -> compare refresh_token between with database
 // -> response
@@ -253,8 +259,9 @@ router.post('/signin', async function (req, res) {
             }
             // set refresh_token to cookie with http-only
             // set access_token to in-memory
+
             return res
-                .cookie('refresh_token', refresh_token, { secure: true, httpOnly: true })
+                .cookie('refresh_token', refresh_token, { httpOnly: process.env.COOKIES_HTTPONLY === 'true', secure: process.env.COOKIES_SECURE === 'true' })
                 .json({ access_token });
         }
 
