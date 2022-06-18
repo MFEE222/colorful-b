@@ -54,19 +54,24 @@ router.post('/signup', async function (req, res) {
     // validate
     if (!name || !account || !password || !confirm_password) {
         return res.sendStatus(401);
+        // return res.status(401).send({ message: '註冊資料格式錯誤' });
     }
     if (!validator.isLength(name, { min: 1 })) {
         return res.sendStatus(401);
+        // return res.status(401).send({ message: '註冊資料格式錯誤' });
     }
     if (!validator.isEmail(account)) {
         return res.sendStatus(401);
+        // return res.status(401).send({ message: '註冊資料格式錯誤' });
     }
     if (!validator.isLength(password, { min: 8, max: 30 }) ||
         !validator.equals(password, confirm_password)) {
         return res.sendStatus(401);
+        // return res.status(401).send({ message: '註冊資料格式錯誤' });
     }
     if (!validator.isLength(hint, { min: 0, max: 10 })) {
         return res.sendStatus(401);
+        // return res.status(401).send({ message: '註冊資料格式錯誤' });
     }
     // is existed in db ?
     try {
@@ -75,7 +80,8 @@ router.post('/signup', async function (req, res) {
             .where('email', account);
         // already register
         if (rows.length > 0) {
-            throw new Error;
+            return res.sendStatus(403);
+            // return res.status(403).send({ message: '此 Email 已註冊過' });
         }
     } catch (err) {
         console.log('error :>>', err);
@@ -102,6 +108,7 @@ router.post('/signup', async function (req, res) {
         // console.log('insert :>> ', insert);
         if (insert.length < 1) {
             throw new Error;
+            // return res.status(403).send({ message: '伺服器繁忙，請稍後再試' });
         }
 
     } catch (err) {
@@ -223,6 +230,7 @@ router.post('/signin', async function (req, res) {
     // console.log('password :>> ', password);
     if (!account || !password) {
         return res.sendStatus(401);
+        // return res.status(401).send({ message: '缺少 帳號 or 密碼' });
     }
 
     // is existed in database
@@ -233,6 +241,7 @@ router.post('/signin', async function (req, res) {
 
         if (rows.length == 0) {
             throw new Error;
+            // return res.status(403).send({ message: '帳號 or 密碼錯誤' });
         }
 
         const user = rows[0];
@@ -242,6 +251,7 @@ router.post('/signin', async function (req, res) {
         if (!user.registered) {
             // tell frontend(user) to verify email
             return res.sendStatus(403);
+            // return res.status(403).send({ message: 'Email 尚未驗證' });
         }
 
         // confirm password
@@ -264,6 +274,9 @@ router.post('/signin', async function (req, res) {
                 .cookie('refresh_token', refresh_token, { httpOnly: process.env.COOKIES_HTTPONLY === 'true', secure: process.env.COOKIES_SECURE === 'true' })
                 .json({ access_token });
         }
+
+        return res.sendStatus(403);
+        // return res.status(403).send({ message: '帳號 or 密碼錯誤' });
 
     } catch (err) {
         console.log('err :>> ', err);
@@ -406,9 +419,91 @@ router.post('/forgot/:token', async function (req, res) {
     }
 });
 
-// TODO: reset password
 // reset password
-router.post('/resetpwd', async function (req, res) {
+router.post('/reset-password', authenticateToken, async function (req, res) {
+    const { password, confirm_password } = req.body;
+    const { user } = req;
+
+    if (!validator.isLength(password, { min: 8, max: 30 }) ||
+        !validator.equals(password, confirm_password)) {
+        return res.sendStatus(401);
+    }
+
+    try {
+        const hash = await argon2.hash(password);
+        console.log('hash :>> ', hash);
+        const update = await knex('users')
+            .where('email', user.email)
+            .update('password', hash);
+
+        console.log('update :>> ', update);
+        if (update < 1) {
+            throw new Error;
+        }
+
+        return res.sendStatus(200);
+    } catch (err) {
+        console.log('err :>>', err);
+        return res.sendStatus(403);
+    }
+});
+
+// FIXME: fix edit email (must verify email again)
+router.post('/edit-profile', authenticateToken, async function (req, res) {
+    const { name, birthday, email, phone } = req.body;
+    const { user } = req;
+    const query = {};
+
+    console.log('name :>> ', name);
+    console.log('birthday :>> ', birthday);
+    console.log('email :>> ', email);
+    console.log('phone :>> ', phone);
+
+
+    if (!name && !birthday && !email && !phone) {
+        return res.sendStatus(401);
+    }
+
+
+    if (name != undefined && validator.isLength(name, { min: 1 })) {
+        query['name'] = name;
+    }
+
+    if (birthday != undefined && validator.isDate(birthday, { format: 'YYYY-MM-DD' })) {
+        query['birthday'] = birthday;
+    }
+
+    if (email != undefined && validator.isEmail(email)) {
+        query['account'] = email;
+        query['email'] = email;
+
+        const rows = await knex.select().from('users').where('email', email);
+        console.log('rows :>> ', rows);
+        if (rows.length > 0)
+            return res.sendStatus(403);
+    }
+
+    if (phone != undefined && validator.isMobilePhone(phone)) {
+        query['phone'] = phone;
+    }
+    console.log('query :>> ', query);
+
+    try {
+        const update = await knex('users')
+            .where('email', user.email)
+            .update(query);
+
+        console.log('update :>> ', update);
+        if (update < 1) {
+            return res.sendStatus(403);
+        }
+
+        return res.sendStatus(200);
+
+    } catch (err) {
+        console.log('err :>>', err);
+        return res.sendStatus(403);
+    }
 
 });
 
