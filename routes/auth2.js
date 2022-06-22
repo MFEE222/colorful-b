@@ -1,13 +1,19 @@
+// standard
 const express = require('express');
 const router = express.Router();
+const path = require('path');
+const fs = require('fs');
+
+// third-part
 const argon2 = require('argon2');
 const jwt = require('jsonwebtoken');
 const knex = require('../utils/knex');
+const moment = require('moment');
 const { default: validator } = require('validator');
-const { Base64 } = require('js-base64');
 const AWS = require('aws-sdk');
-const res = require('express/lib/response');
-const path = require('path');
+const multer = require('multer');
+const { Base64 } = require('js-base64');
+const { FSx, CloudFront } = require('aws-sdk');
 require('dotenv').config();
 
 // TODO: How to store refresh token on browser http-only cookie ?
@@ -120,7 +126,7 @@ router.post('/signup', async function (req, res) {
     // const user = JSON.stringify({ email: account });
     const user = { email: account };
     const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '30m' });
-    const url = process.env.AUTH_CONFIRM_EMAIL_URL + token;
+    const url = process.env.AUTH_VERIFY_EMAIL_SIGNUP_URL + token;
     // send email
     const result = await sendVerifyEmail(account, url);
     if (result instanceof Error) {
@@ -190,26 +196,33 @@ router.get('/token', async function (req, res) {
         return res.sendStatus(401);
     }
     // verify
-    jwt.verify(refresh_token, process.env.REFRESH_TOKEN_SECRET, async (err, user) => {
+    jwt.verify(refresh_token, process.env.REFRESH_TOKEN_SECRET, async (err, payload) => {
         if (err) return res.sendStatus(403);
 
         try {
 
             const rows = await knex.select()
                 .from('users')
-                .where('email', user.email);
+                .where('email', payload.email);
 
             if (rows.length == 0) {
                 throw new Error;
             }
-            const row = rows[0];
+            const user = rows[0];
             // console.log('row.refresh_token :>> ', row.refresh_token);
-            if (row.refresh_token != refresh_token) {
+            if (user.refresh_token != refresh_token) {
                 throw new Error;
             }
-
             // return new access token
-            return res.json({ access_token: generateAccessToken({ name: user.name, email: user.email }) });
+            return res.json({
+                access_token: generateAccessToken({
+                    name: user.name,
+                    email: user.email,
+                    phone: user.phone,
+                    birthday: moment(user.birthday).format('YYYY-MM-DD'),
+                    avatar: user.avatar
+                })
+            });
 
         } catch (err) {
             console.log('err :>> ', err);
@@ -257,7 +270,13 @@ router.post('/signin', async function (req, res) {
         // confirm password
         if (await argon2.verify(user.password, password)) {
             // generate token
-            const access_token = generateAccessToken({ name: user.name, email: user.email });
+            const access_token = generateAccessToken({
+                name: user.name,
+                email: user.email,
+                phone: user.phone,
+                birthday: moment(user.birthday).format('YYYY-MM-DD'),
+                avatar: user.avatar
+            });
             const refresh_token = generateRefreshToken({ name: user.name, email: user.email });
             // console.log('refresh_token.length :>> ', refresh_token.length);
             // write token
@@ -448,44 +467,38 @@ router.post('/reset-password', authenticateToken, async function (req, res) {
     }
 });
 
-// FIXME: fix edit email (must verify email again)
-router.post('/edit-profile', authenticateToken, async function (req, res) {
-    const { name, birthday, email, phone } = req.body;
+// edit personal info
+router.post('/edit/personal-info', authenticateToken, async function (req, res) {
+    const { name, birthday, phone } = req.body;
     const { user } = req;
     const query = {};
 
-    console.log('name :>> ', name);
-    console.log('birthday :>> ', birthday);
-    console.log('email :>> ', email);
-    console.log('phone :>> ', phone);
-
-
-    if (!name && !birthday && !email && !phone) {
+    if (!name && !birthday && !phone) {
         return res.sendStatus(401);
     }
 
-
-    if (name != undefined && validator.isLength(name, { min: 1 })) {
+    if (name != '') {
+        if (!validator.isLength(name, { min: 1 })) {
+            return res.sendStatus(403);
+        }
         query['name'] = name;
     }
 
-    if (birthday != undefined && validator.isDate(birthday, { format: 'YYYY-MM-DD' })) {
+
+    if (birthday != '') {
+        if (!validator.isDate(birthday, { format: 'YYYY-MM-DD' })) {
+            return res.sendStatus(403);
+        }
         query['birthday'] = birthday;
     }
 
-    if (email != undefined && validator.isEmail(email)) {
-        query['account'] = email;
-        query['email'] = email;
-
-        const rows = await knex.select().from('users').where('email', email);
-        console.log('rows :>> ', rows);
-        if (rows.length > 0)
+    if (phone != '') {
+        if (!validator.isMobilePhone(phone)) {
             return res.sendStatus(403);
-    }
-
-    if (phone != undefined && validator.isMobilePhone(phone)) {
+        }
         query['phone'] = phone;
     }
+
     console.log('query :>> ', query);
 
     try {
@@ -499,13 +512,162 @@ router.post('/edit-profile', authenticateToken, async function (req, res) {
         }
 
         return res.sendStatus(200);
+    } catch (err) {
+        console.log('err :>> ', err);
+        return res.sendStatus(403);
+    }
+});
+
+// edit email
+router.post('/edit/email', authenticateToken, async function (req, res) {
+    const { email } = req.body;
+    const { user } = req;
+    const payload = {
+        oldEmail: '',
+        newEamil: ''
+    };
+
+    if (!email || !validator.isEmail(email)) {
+        return res.sendStatus(401);
+    }
+
+    // check user validation
+    try {
+        const rows = await knex.select()
+            .from('users')
+            .where('email', user.email);
+
+        if (rows.length < 1) {
+            throw new Error;
+        }
+
+        payload.oldEmail = rows[0].email;
 
     } catch (err) {
         console.log('err :>>', err);
         return res.sendStatus(403);
     }
+    // check new-email validation
+    try {
+        const rows = await knex.select()
+            .from('users')
+            .where('email', email);
 
+        if (rows.length > 0) {
+            throw new Error;
+        }
+
+        payload.newEmail = email;
+
+        const token = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '30m' });
+        const url = process.env.AUTH_VERIFY_EMAIL_UPDATE_URL + token;
+
+        const sent = await sendVerifyEmail(email, url);
+        console.log('sent :>> ', sent);
+
+        return res.sendStatus(200);
+    } catch (err) {
+        console.log('err :>>', err);
+        return res.sendStatus(403);
+    }
 });
+
+// edit email : handle verify mail address
+router.get('/edit/email/:token', async function (req, res) {
+    const { token } = req.params;
+
+    try {
+        const { oldEmail, newEmail } = await jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+        console.log('oldEmail :>> ', oldEmail);
+        console.log('newEmail :>> ', newEmail);
+
+        const update = await knex('users')
+            .where('email', oldEmail)
+            .update({
+                account: newEmail,
+                email: newEmail,
+            });
+
+        console.log('update :>> ', update);
+        if (update < 1) {
+            throw new Error;
+        }
+
+        return res.sendStatus(200);
+    } catch (err) {
+        console.log('err :>>', err);
+        return res.sendStatus(403);
+    }
+});
+
+// edit avatar
+const storageAvatar = multer.diskStorage({
+    destination: function (req, file, cb) {
+        const id = Base64.encode(req.user.email);
+        const dir = path.join(__dirname, '../public/uploads/profile', id);
+        if (!fs.existsSync(dir)) fs.mkdirSync(dir);
+        req.avatarUrl = process.env.PRODUCTION_URL + '/uploads/profile/' + id;
+        cb(null, dir);
+    },
+    filename: function (req, file, cb) {
+        const ext = file.originalname.split('.').pop();
+        const id = Base64.encode(req.user.email);
+        req.avatarUrl += '/' + id + '.' + ext;
+        cb(null, id + '.' + ext);
+    },
+});
+
+const uploadAvatar = multer({
+    storage: storageAvatar,
+    fileFilter: function (req, file, cb) {
+        if (file.mimetype !== 'image/jpeg'
+            && file.mimetype !== 'image/jpg'
+            && file.mimetype !== 'image/png') {
+            cb(new Error, false);
+        }
+
+        cb(null, true);
+    },
+    limits: {
+        // 1 MB
+        fileSize: 1024 * 1024,
+    }
+});
+
+router.post('/edit/avatar',
+    authenticateToken,
+    function (req, res) {
+        uploadAvatar.single('avatar')(req, res, async function (err) {
+            if (err instanceof multer.MulterError) {
+                console.log('multer err :>> ', err);
+                return res.sendStatus(403);
+            }
+            else if (err) {
+                console.log('err :>> ', err);
+                return res.sendStatus(403);
+            }
+
+            console.log('req.file :>> ', req.file);
+            console.log('req.avatarUrl :>> ', req.avatarUrl);
+
+            // wirte to db
+            try {
+                const { user } = req;
+                const update = await knex('users')
+                    .where('email', user.email)
+                    .update('avatar', req.avatarUrl);
+
+                if (update < 1) {
+                    throw new Error;
+                }
+
+                return res.sendStatus(200);
+            } catch (err) {
+                console.log('err :>>', err);
+                return res.sendStatus(403);
+            }
+        })
+    });
 
 // middleware
 function authenticateToken(req, res, next) {
@@ -618,23 +780,5 @@ async function sendForgotPasswordEmail(to, url) {
         return err;
     }
 }
-
-
-// router.get('/env', (req, res) => {
-//     console.log('process.env.ACCESS_TOKEN_SECRET :>> ', process.env.ACCESS_TOKEN_SECRET);
-//     console.log('process.env.REFRESH_TOKEN_SECRET :>> ', process.env.REFRESH_TOKEN_SECRET);
-//     console.log('process.env.PRODUCTION_URL :>> ', process.env.PRODUCTION_URL);
-//     console.log('process.env.AWS_SES_SENDER :>> ', process.env.AWS_SES_SENDER);
-//     console.log('process.env.AUTH_CONFIRM_EMAIL_URL :>> ', process.env.AUTH_CONFIRM_EMAIL_URL);
-//     console.log('process.env.AUTH_FORGOT_PASSWORD_URL :>> ', process.env.AUTH_FORGOT_PASSWORD_URL);
-
-//     res.sendStatus(200);
-// });
-
-// router.get('/forgot-view', async function (req, res) {
-
-
-//     return res.render('forgot', { to: process.env.AUTH_FORGOT_PASSWORD_URL + 'view' });
-// });
 
 module.exports = router;
