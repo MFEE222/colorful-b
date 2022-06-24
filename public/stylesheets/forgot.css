@@ -1,0 +1,42 @@
+.box {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    align-content: center;
+    margin: 0 auto;
+    height: 60vh;
+}
+
+h5 {
+    text-align: center;
+    width: 100%;
+    position: fixed;
+    bottom: 0.9vw;
+}
+
+h1 {
+    text-align: center;
+    width: 100%;
+}
+
+
+form {
+    text-align: center;
+}
+
+
+form > input {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+form > button {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+form > * {
+    display: block;
+    margin-bottom: 0.9vw;
+}

@@ -1,8 +1,10 @@
 node_modules
 tmp.*
 .env
+config.json
 dist
 .DS_Store
+*.rest
 
 /sessions
 /public/images/
