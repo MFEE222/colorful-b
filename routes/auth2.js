@@ -250,8 +250,18 @@ router.get('/token', async function (req, res) {
                 idToken: refresh_token,
                 audience: [process.env.GOOGLE_CLIENT_ID]
             });
-            console.log('ticket :>> ', ticket);
-            const user = ticket.getPayload();
+            // console.log('ticket :>> ', ticket);
+            const gUser = ticket.getPayload();
+
+            const rows = await knex.select()
+                .from('users')
+                .where('email', gUser.email);
+
+            if (rows.length < 1) {
+                throw new Error();
+            }
+
+            const user = rows[0];
 
             return res.json({
                 access_token: generateRegularAccessToken({
@@ -259,7 +269,7 @@ router.get('/token', async function (req, res) {
                     email: user.email,
                     phone: user.phone,
                     birthday: moment(user.birthday).format('YYYY-MM-DD'),
-                    avatar: user.picture,
+                    avatar: user.avatar,
                 })
             })
         } catch (err) {
@@ -776,7 +786,7 @@ router.post('/google/signin', authenticateGoogleIDToken, async function (req, re
             name: user.name,
             email: user.email,
             phone: user.phone,
-            birthday: moment(user.birthday).format('YYYY-MM-DD'),
+            birthday: user.birthday ? moment(user.birthday).format('YYYY-MM-DD') : 'YYYY-MM-DD',
             avatar: user.picture
         });
 
@@ -892,7 +902,6 @@ async function sendForgotPasswordEmail(to, url) {
 
 
 // authentication for regular access token 
-// TODO: unit regular and google token
 function authenticateRegularToken(req, res, next) {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
@@ -907,7 +916,6 @@ function authenticateRegularToken(req, res, next) {
 }
 
 // authentication for google access token (sign in button with popup mode)
-// TODO: unit regular and google token
 async function authenticateGoogleIDToken(req, res, next) {
     const token = req.headers['authorization'].split(' ').pop();
     // console.log('token :>> ', token);
