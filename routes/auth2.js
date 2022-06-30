@@ -14,11 +14,9 @@ const AWS = require('aws-sdk');
 const multer = require('multer');
 const { Base64 } = require('js-base64');
 const { FSx, CloudFront } = require('aws-sdk');
+const { OAuth2Client } = require('google-auth-library');
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 require('dotenv').config();
-
-// TODO: How to store refresh token on browser http-only cookie ?
-// TODO: AWS SES
-// TODO: Google-Sign-In
 
 // health
 router.use('/health', function (req, res) {
@@ -30,10 +28,8 @@ router.use('/health', function (req, res) {
 });
 
 // auth
-// -> verify access_token and get payload (user)
-// -> compare payload(user) to row of database
-// -> response
-router.get('/', authenticateToken, async function (req, res) {
+// check access token validation
+router.get('/', authenticateRegularToken, async function (req, res) {
     const { user } = req;
     // check user profile in db
     try {
@@ -182,53 +178,95 @@ router.get('/signup/:token', async function (req, res) {
 
 // token
 // FIXME: How to fix user frequently request new access token?
-// -> verify refresh_token and get payload(user)
-// -> compare refresh_token between with database
-// -> response
-// router.post('/token', async function (req, res) {
+// 1. get refresh token from cookies
+// 2. decode refresh token and confirm who is issuer
+// 3. verify refresh token according by issuer
+// 4. return new access token when validation pass.
 router.get('/token', async function (req, res) {
     // check arg validation
     // const { token } = req.body;
     const { refresh_token } = req.cookies;
-    console.log('refresh_token :>> ', refresh_token);
+    // console.log('refresh_token :>> ', refresh_token);
 
     if (!refresh_token) {
         return res.sendStatus(401);
     }
-    // verify
-    jwt.verify(refresh_token, process.env.REFRESH_TOKEN_SECRET, async (err, payload) => {
-        if (err) return res.sendStatus(403);
 
+    // decode token
+    const payload = jwt.decode(refresh_token);
+    // console.log('payload :>> ', payload);
+
+    switch (payload.iss) {
+        case process.env.REGULAR_TOKEN_ISS:
+            verifyRegularRefreshToken();
+            break;
+        case process.env.GOOGLE_TOKEN_ISS:
+            verifyGoogleRefreshToken();
+            break
+        default:
+            return res.sendStatus(403);
+    }
+
+    // inner function
+    function verifyRegularRefreshToken() {
+        jwt.verify(refresh_token, process.env.REFRESH_TOKEN_SECRET, async (err, payload) => {
+            if (err) return res.sendStatus(403);
+
+            try {
+
+                const rows = await knex.select()
+                    .from('users')
+                    .where('email', payload.email);
+
+                if (rows.length == 0) {
+                    throw new Error;
+                }
+                const user = rows[0];
+                // console.log('row.refresh_token :>> ', row.refresh_token);
+                if (user.refresh_token != refresh_token) {
+                    throw new Error;
+                }
+                // return new access token
+                return res.json({
+                    access_token: generateRegularAccessToken({
+                        name: user.name,
+                        email: user.email,
+                        phone: user.phone,
+                        birthday: moment(user.birthday).format('YYYY-MM-DD'),
+                        avatar: user.avatar
+                    })
+                });
+
+            } catch (err) {
+                console.log('err :>> ', err);
+                return res.sendStatus(403);
+            }
+        });
+    }
+
+    async function verifyGoogleRefreshToken() {
         try {
+            const ticket = await client.verifyIdToken({
+                idToken: refresh_token,
+                audience: [process.env.GOOGLE_CLIENT_ID]
+            });
+            console.log('ticket :>> ', ticket);
+            const user = ticket.getPayload();
 
-            const rows = await knex.select()
-                .from('users')
-                .where('email', payload.email);
-
-            if (rows.length == 0) {
-                throw new Error;
-            }
-            const user = rows[0];
-            // console.log('row.refresh_token :>> ', row.refresh_token);
-            if (user.refresh_token != refresh_token) {
-                throw new Error;
-            }
-            // return new access token
             return res.json({
-                access_token: generateAccessToken({
+                access_token: generateRegularAccessToken({
                     name: user.name,
                     email: user.email,
                     phone: user.phone,
                     birthday: moment(user.birthday).format('YYYY-MM-DD'),
-                    avatar: user.avatar
+                    avatar: user.picture,
                 })
-            });
-
+            })
         } catch (err) {
-            console.log('err :>> ', err);
+            console.log('err :>>', err);
             return res.sendStatus(403);
         }
-    });
+    }
 });
 
 
@@ -268,34 +306,34 @@ router.post('/signin', async function (req, res) {
         }
 
         // confirm password
-        if (await argon2.verify(user.password, password)) {
-            // generate token
-            const access_token = generateAccessToken({
-                name: user.name,
-                email: user.email,
-                phone: user.phone,
-                birthday: moment(user.birthday).format('YYYY-MM-DD'),
-                avatar: user.avatar
-            });
-            const refresh_token = generateRefreshToken({ name: user.name, email: user.email });
-            // console.log('refresh_token.length :>> ', refresh_token.length);
-            // write token
-            const update_result = await knex('users')
-                .where('email', user.email)
-                .update('refresh_token', refresh_token);
-            if (update_result < 1) {
-                throw new Error;
-            }
-            // set refresh_token to cookie with http-only
-            // set access_token to in-memory
-
-            return res
-                .cookie('refresh_token', refresh_token, { httpOnly: process.env.COOKIES_HTTPONLY === 'true', secure: process.env.COOKIES_SECURE === 'true' })
-                .json({ access_token });
+        if (!await argon2.verify(user.password, password)) {
+            return res.sendStatus(403);
         }
 
-        return res.sendStatus(403);
-        // return res.status(403).send({ message: '帳號 or 密碼錯誤' });
+        // generate token
+        const access_token = generateRegularAccessToken({
+            name: user.name,
+            email: user.email,
+            phone: user.phone,
+            birthday: moment(user.birthday).format('YYYY-MM-DD'),
+            avatar: user.avatar
+        });
+        const refresh_token = generateRegularRefreshToken({ name: user.name, email: user.email });
+        // console.log('refresh_token.length :>> ', refresh_token.length);
+        // write token
+        const update_result = await knex('users')
+            .where('email', user.email)
+            .update('refresh_token', refresh_token);
+        if (update_result < 1) {
+            throw new Error;
+        }
+        // set refresh_token to cookie with http-only
+        // set access_token to in-memory
+
+        return res
+            .cookie('refresh_token', refresh_token, { httpOnly: process.env.COOKIES_HTTPONLY === 'true', secure: process.env.COOKIES_SECURE === 'true' })
+            .json({ access_token });
+
 
     } catch (err) {
         console.log('err :>> ', err);
@@ -319,7 +357,7 @@ router.delete('/signout', async function (req, res) {
         const update_result = await knex('users')
             .where('refresh_token', refresh_token)
             .update('refresh_token', '');
-        console.log('update_result :>> ', update_result);
+        // console.log('update_result :>> ', update_result);
 
         if (update_result != 1) {
             throw new Error;
@@ -439,7 +477,7 @@ router.post('/forgot/:token', async function (req, res) {
 });
 
 // reset password
-router.post('/reset-password', authenticateToken, async function (req, res) {
+router.post('/reset-password', authenticateRegularToken, async function (req, res) {
     const { password, confirm_password } = req.body;
     const { user } = req;
 
@@ -468,7 +506,7 @@ router.post('/reset-password', authenticateToken, async function (req, res) {
 });
 
 // edit personal info
-router.post('/edit/personal-info', authenticateToken, async function (req, res) {
+router.post('/edit/personal-info', authenticateRegularToken, async function (req, res) {
     const { name, birthday, phone } = req.body;
     const { user } = req;
     const query = {};
@@ -519,7 +557,7 @@ router.post('/edit/personal-info', authenticateToken, async function (req, res) 
 });
 
 // edit email
-router.post('/edit/email', authenticateToken, async function (req, res) {
+router.post('/edit/email', authenticateRegularToken, async function (req, res) {
     const { email } = req.body;
     const { user } = req;
     const payload = {
@@ -635,7 +673,7 @@ const uploadAvatar = multer({
 });
 
 router.post('/edit/avatar',
-    authenticateToken,
+    authenticateRegularToken,
     function (req, res) {
         uploadAvatar.single('avatar')(req, res, async function (err) {
             if (err instanceof multer.MulterError) {
@@ -647,8 +685,8 @@ router.post('/edit/avatar',
                 return res.sendStatus(403);
             }
 
-            console.log('req.file :>> ', req.file);
-            console.log('req.avatarUrl :>> ', req.avatarUrl);
+            // console.log('req.file :>> ', req.file);
+            // console.log('req.avatarUrl :>> ', req.avatarUrl);
 
             // wirte to db
             try {
@@ -669,31 +707,99 @@ router.post('/edit/avatar',
         })
     });
 
-// middleware
-function authenticateToken(req, res, next) {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
-    if (!token) return res.sendStatus(401);
+// google sign in (redirect mode)
+// router.post('/google/signin',
+//     verifyGoogleCSRF,
+//     verifyGoogleIDToken,
+//     function (req, res) {
+//         const token = req.body['credential'];
+//         const csrf = req.body['g_csrf_token'];
+//         return res.redirect('http://localhost:3000/home').json({ access_token: token, g_csrf_token: csrf });
+//     });
 
-    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
-        if (err) return res.sendStatus(403);
-        console.log('user :>> ', user);
-        req.user = user;
-        next();
-        // for test
-        // res.sendStatus(200);
-    });
-}
+// google auth (redirect mode)
+// router.post('/google/auth',
+//     verifyGoogleCSRF,
+//     verifyGoogleIDToken,
+//     function (req, res) {
+//         return res.sendStatus(200);
+//     });
+
+// google sign in (popup mode)
+// 1. get access token (google) from frontend
+// 2. store it to be refresh token in users database
+// 3. generate access token (regular) for frontend 
+// 4. return access token (regular) and refresh token (google) 
+router.post('/google/signin', authenticateGoogleIDToken, async function (req, res) {
+    const { user, token } = req;
+    // console.log('user :>> ', user);
+    // console.log('token :>> ', token);
+    // insert or update user information in database
+    try {
+        const rows = await knex.select()
+            .from('users')
+            .where('email', user.email);
+
+        // update user information
+        if (rows.length > 0) {
+            const update = await knex('users')
+                .where('email', user.email)
+                .update({
+                    name: user.name,
+                    avatar: user.picture,
+                    refresh_token: token,
+                });
+
+            if (update < 1) {
+                throw new Error;
+            }
+        }
+        // insert user information
+        else {
+            const insert = await knex('users')
+                .insert({
+                    name: user.name,
+                    account: user.email,
+                    email: user.email,
+                    avatar: user.picture,
+                    registered: 2,
+                    refresh_token: token,
+                });
+
+            if (insert.length < 1) {
+                throw new Error;
+            }
+        }
+
+        // generate access token (regular)
+        const access_token = generateRegularAccessToken({
+            name: user.name,
+            email: user.email,
+            phone: user.phone,
+            birthday: moment(user.birthday).format('YYYY-MM-DD'),
+            avatar: user.picture
+        });
+
+        return res
+            .cookie('refresh_token', token, { httpOnly: process.env.COOKIES_HTTPONLY === 'true', secure: process.env.COOKIES_SECURE === 'true' })
+            .json({ access_token });
+
+    } catch (err) {
+        console.log('err :>>', err);
+        return res.sendStatus(403);
+    }
+})
+
 
 // function
-function generateAccessToken(payload) {
+function generateRegularAccessToken(payload) {
     // console.log('process.env.ACCESS_TOKEN_SECRET :>> ', process.env.ACCESS_TOKEN_SECRET);
-    return jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '5m' });
+    return jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '5m', issuer: process.env.REGULAR_TOKEN_ISS });
 }
 
-function generateRefreshToken(payload) {
+function generateRegularRefreshToken(payload) {
     // console.log('process.env.REFRESH_TOKEN_SECRET :>> ', process.env.REFRESH_TOKEN_SECRET);
-    return jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET);
+    return jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET, { issuer: process.env.REGULAR_TOKEN_ISS });
 }
 
 async function sendVerifyEmail(to, url) {
@@ -780,5 +886,104 @@ async function sendForgotPasswordEmail(to, url) {
         return err;
     }
 }
+
+
+// middleware
+
+
+// authentication for regular access token 
+// TODO: unit regular and google token
+function authenticateRegularToken(req, res, next) {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+    if (!token) return res.sendStatus(401);
+
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
+        if (err) return res.sendStatus(403);
+        // console.log('user :>> ', user);
+        req.user = user;
+        next();
+    });
+}
+
+// authentication for google access token (sign in button with popup mode)
+// TODO: unit regular and google token
+async function authenticateGoogleIDToken(req, res, next) {
+    const token = req.headers['authorization'].split(' ').pop();
+    // console.log('token :>> ', token);
+    if (!token) return res.sendStatus(401);
+
+    try {
+        const ticket = await client.verifyIdToken({
+            idToken: token,
+            audience: [process.env.GOOGLE_CLIENT_ID]
+        });
+
+        const user = ticket.getPayload();
+        // console.log('google user :>> ', user);
+
+        if (user.aud != process.env.GOOGLE_CLIENT_ID) {
+            throw new Error;
+        }
+
+        req.user = user;
+        req.token = token;
+        next();
+    } catch (err) {
+        console.log('err :>>', err);
+        return res.sendStatus(400);
+    }
+}
+
+// for ux_mode = redirect
+// function verifyGoogleCSRF(req, res, next) {
+//     const csrf_token_cookie = req.cookies['g_csrf_token'];
+//     const csrf_token_body = req.body['g_csrf_token'];
+
+//     if (!csrf_token_cookie) {
+//         return res.status(400).send('No CSRF token in cookie.');
+//     }
+//     if (!csrf_token_body) {
+//         return res.status(400).send('No CSRF token in body.');
+//     }
+//     if (csrf_token_cookie != csrf_token_body) {
+//         return res.status(400).send('Failed to verify double submit cookie.');
+//     }
+
+//     next();
+// }
+
+// for ux_mode = redirect
+// async function verifyGoogleIDToken(req, res, next) {
+//     const token = req.body['credential'];
+//     const clientId = req.body['clientId'];
+
+//     try {
+//         const ticket = await client.verifyIdToken({
+//             idToken: token,
+//             audience: [process.env.GOOGLE_CLIENT_ID]
+//         });
+
+//         const user = ticket.getPayload();
+//         const userID = user['sub'];
+
+//         console.log('google user :>> ', user);
+//         console.log('google userID :>> ', userID);
+
+//         if (user.aud != clientId) {
+//             throw new Error;
+//         }
+
+
+//         req.user = user;
+//         req.useID = userID;
+
+//         next();
+//     } catch (err) {
+//         console.log('err :>>', err);
+//         return res.sendStatus(400);
+//     }
+// }
+
 
 module.exports = router;
