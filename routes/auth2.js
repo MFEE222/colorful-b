@@ -780,23 +780,35 @@ router.post('/google/signin', authenticateGoogleIDToken, async function (req, re
             }
         }
 
-        // generate access token (regular)
-        const access_token = generateRegularAccessToken({
-            name: user.name,
-            email: user.email,
-            phone: user.phone,
-            birthday: user.birthday ? moment(user.birthday).format('YYYY-MM-DD') : 'YYYY-MM-DD',
-            avatar: user.picture
-        });
-
-        return res
-            .cookie('refresh_token', token, { httpOnly: process.env.COOKIES_HTTPONLY === 'true', secure: process.env.COOKIES_SECURE === 'true' })
-            .json({ access_token });
 
     } catch (err) {
         console.log('err :>>', err);
         return res.sendStatus(403);
     }
+
+    try {
+        const rows = await knex.select()
+            .from('users')
+            .where('email', user.email);
+
+        const row = rows[0];
+        // generate access token (regular)
+        const access_token = generateRegularAccessToken({
+            name: row.name,
+            email: row.email,
+            phone: row.phone,
+            birthday: moment(row.birthday).format('YYYY-MM-DD'),
+            avatar: row.avatar
+        });
+
+        return res
+            .cookie('refresh_token', token, { httpOnly: process.env.COOKIES_HTTPONLY === 'true', secure: process.env.COOKIES_SECURE === 'true' })
+            .json({ access_token });
+    } catch (err) {
+        console.log('err :>>', err);
+    }
+
+
 })
 
 
