@@ -13,7 +13,6 @@ const { default: validator } = require('validator');
 const AWS = require('aws-sdk');
 const multer = require('multer');
 const { Base64 } = require('js-base64');
-const { FSx, CloudFront } = require('aws-sdk');
 const { OAuth2Client } = require('google-auth-library');
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 require('dotenv').config();
