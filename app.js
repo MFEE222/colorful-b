@@ -27,7 +27,13 @@ const app = express();
 app.use(
     cors({
         // 為了要讓 browser 在 CORS 的情況下還是幫我們送 cookie
-        origin: ['http://localhost:3000'],
+        origin: [
+            'http://color4-me-alb-1534160685.ap-northeast-1.elb.amazonaws.com',
+            'https://color4-me-alb-1534160685.ap-northeast-1.elb.amazonaws.com',
+            'http://color4.me',
+            'http://localhost:3000',
+            'https://color4.me',
+        ],
         credentials: true,
     })
 );
