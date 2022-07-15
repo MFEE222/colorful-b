@@ -5,7 +5,8 @@ const path = require('path');
 const fs = require('fs');
 
 // third-part
-const argon2 = require('argon2');
+// const argon2 = require('argon2');
+const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const knex = require('../utils/knex');
 const moment = require('moment');
@@ -90,8 +91,10 @@ router.post('/signup', async function (req, res) {
     }
 
     // hash
-    const hash_password = await argon2.hash(password);
-    const hash_hint = await argon2.hash(hint);
+    // const hash_password = await argon2.hash(password);
+    // const hash_hint = await argon2.hash(hint);
+    const hash_password = await bcrypt.hash(password, 10);
+    const hash_hint = await bcrypt.hash(hint, 10);
     console.log('hash_password.length :>> ', hash_password.length);
     console.log('hash_hint.length :>> ', hash_hint.length);
 
@@ -315,7 +318,8 @@ router.post('/signin', async function (req, res) {
         }
 
         // confirm password
-        if (!await argon2.verify(user.password, password)) {
+        // if (!await argon2.verify(user.password, password)) {
+        if (!await bcrypt.compare(user.password, password)) {
             return res.sendStatus(403);
         }
 
@@ -401,7 +405,8 @@ router.post('/forgot', async function (req, res) {
 
         // verify
         const user = rows[0];
-        if (await argon2.verify(user.password_hint, hint)) {
+        // if (await argon2.verify(user.password_hint, hint)) {
+        if (await bcrypt.compare(user.password_hint, hint)) {
             const token = jwt.sign({ email: user.email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '30m' });
             const url = process.env.AUTH_FORGOT_PASSWORD_URL + token;
             const result = await sendForgotPasswordEmail(user.email, url);
@@ -466,7 +471,8 @@ router.post('/forgot/:token', async function (req, res) {
             throw new Error;
         }
 
-        const hash = await argon2.hash(new_password);
+        // const hash = await argon2.hash(new_password);
+        const hash = await bcrypt.hash(new_password, 10);
         console.log('hash.length :>> ', hash.length);
 
         const update = await knex('users')
@@ -496,7 +502,8 @@ router.post('/reset-password', authenticateRegularToken, async function (req, re
     }
 
     try {
-        const hash = await argon2.hash(password);
+        // const hash = await argon2.hash(password);
+        const hash = await bcrypt.hash(password, 10);
         console.log('hash :>> ', hash);
         const update = await knex('users')
             .where('email', user.email)
