@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Jun 24, 2022 at 06:16 PM
+-- Generation Time: Jul 16, 2022 at 07:11 PM
 -- Server version: 10.4.21-MariaDB
 -- PHP Version: 8.1.6
 
@@ -1885,7 +1885,7 @@ CREATE TABLE `users` (
   `account` varchar(50) DEFAULT NULL,
   `email` varchar(50) DEFAULT NULL,
   `password` varchar(100) DEFAULT NULL,
-  `refresh_token` varchar(600) DEFAULT NULL,
+  `refresh_token` varchar(2048) DEFAULT NULL,
   `phone` varchar(50) DEFAULT NULL,
   `avatar` varchar(100) DEFAULT NULL,
   `birthday` date DEFAULT NULL,
@@ -1895,13 +1895,6 @@ CREATE TABLE `users` (
   `password_hint` varchar(100) DEFAULT NULL,
   `user_status_id` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
---
--- Dumping data for table `users`
---
-
-INSERT INTO `users` (`id`, `name`, `gender`, `account`, `email`, `password`, `refresh_token`, `phone`, `avatar`, `birthday`, `created_at`, `modified_at`, `registered`, `password_hint`, `user_status_id`) VALUES
-(1, 'Yu Wen Ce', NULL, 'pyfissh@gmail.com', 'pyfissh@gmail.com', '$argon2i$v=19$m=4096,t=3,p=1$9Q6eKHEiKzYF1UqN75Ok1Q$wBfRkxlNzCtzWbLsKYxntgD6dlqhFyj3vY6Fz2WBcqE', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiWXUgV2VuIENlIiwiZW1haWwiOiJweWZpc3NoQGdtYWlsLmNvbSIsImlhdCI6MTY1NjA4NzI5Mn0.m_OiYUO1mDAZBPHa0LPCycZt1BpacWGiRDjiuuK1GLE', '0933127834', 'http://localhost:3003/uploads/profile/cHlmaXNzaEBnbWFpbC5jb20=/cHlmaXNzaEBnbWFpbC5jb20=.jpg', '1991-04-13', NULL, NULL, 1, '$argon2i$v=19$m=4096,t=3,p=1$C0utiIscS6jUqpWEA9xsVQ$IPrS0wUJi+ck4dZ0+wf0x5dXTzlPzXUiifA+yqa7bSM', NULL);
 
 -- --------------------------------------------------------
 
@@ -2142,7 +2135,7 @@ ALTER TABLE `tag`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `user_status`
