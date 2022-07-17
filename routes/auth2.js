@@ -319,7 +319,7 @@ router.post('/signin', async function (req, res) {
 
         // confirm password
         // if (!await argon2.verify(user.password, password)) {
-        if (!await bcrypt.compare(user.password, password)) {
+        if (!await bcrypt.compare(password, user.password)) {
             return res.sendStatus(403);
         }
 
@@ -406,7 +406,7 @@ router.post('/forgot', async function (req, res) {
         // verify
         const user = rows[0];
         // if (await argon2.verify(user.password_hint, hint)) {
-        if (await bcrypt.compare(user.password_hint, hint)) {
+        if (await bcrypt.compare(hint, user.password_hint)) {
             const token = jwt.sign({ email: user.email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '30m' });
             const url = process.env.AUTH_FORGOT_PASSWORD_URL + token;
             const result = await sendForgotPasswordEmail(user.email, url);
