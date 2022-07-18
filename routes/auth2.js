@@ -15,6 +15,7 @@ const AWS = require('aws-sdk');
 const multer = require('multer');
 const { Base64 } = require('js-base64');
 const { OAuth2Client } = require('google-auth-library');
+const { val } = require('sql-bricks');
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 require('dotenv').config();
 
@@ -388,7 +389,7 @@ router.delete('/signout', async function (req, res) {
 router.post('/forgot', async function (req, res) {
     const { email, hint } = req.body;
 
-    if (!validator.isEmail(email)) {
+    if (!validator.isEmail(email) || hint === undefined) {
         return res.sendStatus(401);
     }
 
@@ -406,7 +407,7 @@ router.post('/forgot', async function (req, res) {
         // verify
         const user = rows[0];
         // if (await argon2.verify(user.password_hint, hint)) {
-        if (await bcrypt.compare(hint, user.password_hint)) {
+        if (user.password_hint !== null && await bcrypt.compare(hint, user.password_hint)) {
             const token = jwt.sign({ email: user.email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '30m' });
             const url = process.env.AUTH_FORGOT_PASSWORD_URL + token;
             const result = await sendForgotPasswordEmail(user.email, url);
