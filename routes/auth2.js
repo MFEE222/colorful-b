@@ -377,7 +377,7 @@ router.delete('/signout', async function (req, res) {
             throw new Error;
         }
         return res
-            .clearCookie('refresh_token')
+            .clearCookie('refresh_token', { domain: process.env.COOKIES_DOMAIN })
             .sendStatus(204);
     } catch (err) {
         console.log('error :>>', err);
