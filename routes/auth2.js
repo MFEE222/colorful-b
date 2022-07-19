@@ -24,7 +24,7 @@ router.use('/health', function (req, res) {
     // req.session['health'] = 'OK';
 
     return res
-        .cookie('health', 'OK', { secure: process.env.COOKIES_SECURE, httpOnly: process.env.COOKIES_HTTPONLY })
+        .cookie('health', 'OK', { domain: process.env.COOKIES_DOMAIN, secure: process.env.COOKIES_SECURE, httpOnly: process.env.COOKIES_HTTPONLY })
         .sendStatus(200);
 });
 
@@ -345,7 +345,7 @@ router.post('/signin', async function (req, res) {
         // set access_token to in-memory
 
         return res
-            .cookie('refresh_token', refresh_token, { httpOnly: process.env.COOKIES_HTTPONLY === 'true', secure: process.env.COOKIES_SECURE === 'true' })
+            .cookie('refresh_token', refresh_token, { domain: process.env.COOKIES_DOMAIN, httpOnly: process.env.COOKIES_HTTPONLY === 'true', secure: process.env.COOKIES_SECURE === 'true' })
             .json({ access_token });
 
 
@@ -810,7 +810,7 @@ router.post('/google/signin', authenticateGoogleIDToken, async function (req, re
         });
 
         return res
-            .cookie('refresh_token', token, { httpOnly: process.env.COOKIES_HTTPONLY === 'true', secure: process.env.COOKIES_SECURE === 'true' })
+            .cookie('refresh_token', token, { domain: process.env.COOKIES_DOMAIN, httpOnly: process.env.COOKIES_HTTPONLY === 'true', secure: process.env.COOKIES_SECURE === 'true' })
             .json({ access_token });
     } catch (err) {
         console.log('err :>>', err);
