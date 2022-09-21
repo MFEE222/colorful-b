@@ -7,9 +7,7 @@ dist
 *.rest
 
 /sessions
-/public/images/
 /public/uploads/
-/dng
 /download
 /try
 tmp
